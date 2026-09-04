@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Role - Shiksha Sahayak</title>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: var(--background-color);
+        }
+        .role-container {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem;
+        }
+        .role-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .role-card {
+            background: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .role-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        .role-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="role-container">
+        <h1 style="color: var(--primary-color); margin-bottom: 0.5rem;">Welcome to Shiksha Sahayak</h1>
+        <p class="text-secondary">Please select your role to continue</p>
+
+        <div class="role-grid">
+            <!-- Teacher Selection -->
+            <a href="teacher/dashboard.html" class="role-card">
+                <div class="role-icon">👨‍🏫</div>
+                <h2>I am a Teacher</h2>
+                <p class="mt-2 text-secondary">Manage courses, upload materials, and review AI content.</p>
+            </a>
+
+            <!-- Student Selection (Navigates to Keshav's side eventually, using mock link for now) -->
+            <a href="student/dashboard.html" class="role-card" onclick="alert('Navigating to Student Module (Keshav\'s work)');">
+                <div class="role-icon">👩‍🎓</div>
+                <h2>I am a Student</h2>
+                <p class="mt-2 text-secondary">Access courses, ask questions, and learn interactively.</p>
+            </a>
+        </div>
+        
+        <div class="mt-6">
+            <a href="index.html" class="text-secondary">← Back to Home</a>
+        </div>
+    </div>
+
+</body>
+</html>

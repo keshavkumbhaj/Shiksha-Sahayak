@@ -1,0 +1,230 @@
+/* Teacher Dashboard Specific Styles */
+
+/* Dashboard Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.blue { background-color: #dbeafe; color: #1e40af; }
+.stat-icon.green { background-color: #dcfce3; color: #166534; }
+.stat-icon.orange { background-color: #ffedd5; color: #c2410c; }
+.stat-icon.red { background-color: #fee2e2; color: #991b1b; }
+
+.stat-details h4 {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.stat-details p {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Course Builder */
+.course-builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.units-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.unit-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: #f8fafc;
+    padding: 1rem;
+}
+
+.unit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.unit-title-input {
+    font-size: 1.125rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 0.25rem 0.5rem;
+    width: 60%;
+}
+
+.unit-title-input:focus {
+    background: white;
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.topics-container {
+    padding-left: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.topic-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.topic-title-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.875rem;
+}
+
+.topic-title-input:focus {
+    outline: none;
+}
+
+/* Material Upload Zone */
+.upload-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2rem;
+    text-align: center;
+    background-color: #f8fafc;
+    transition: all 0.2s;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--primary-color);
+    background-color: #f0fdf4;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.upload-hint {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.file-input {
+    display: none;
+}
+
+/* Upload Progress / List */
+.material-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.material-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.material-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.material-icon {
+    font-size: 1.5rem;
+    color: #ef4444; /* PDF Red */
+}
+
+/* Review Cards */
+.review-card {
+    border-left: 4px solid var(--warning-color);
+}
+
+.review-card.approved {
+    border-left-color: var(--success-color);
+}
+
+.review-card.rejected {
+    border-left-color: var(--danger-color);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.review-question {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.review-answer {
+    background-color: #f8fafc;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.review-answer textarea {
+    width: 100%;
+    min-height: 100px;
+    border: 1px solid var(--primary-color);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: inherit;
+    background-color: white;
+}
+
+.review-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}

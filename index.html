@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiksha Sahayak - AI-Powered Learning</title>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        .hero {
+            background-color: var(--surface-color);
+            padding: 6rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .hero h1 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2.5rem auto;
+        }
+        .hero-btn {
+            font-size: 1.125rem;
+            padding: 0.75rem 2rem;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: var(--surface-color);
+            box-shadow: var(--shadow-sm);
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            background: #dbeafe;
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <span style="background: var(--primary-color); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm);">SS</span>
+            Shiksha Sahayak
+        </div>
+        <div>
+            <a href="role-selector.html" class="btn btn-primary">Login</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Intelligent Learning Assistance</h1>
+        <p>Empowering educators with AI-driven content processing and providing students with interactive, verified learning experiences.</p>
+        <a href="role-selector.html" class="btn btn-primary hero-btn">Get Started</a>
+    </section>
+
+    <section class="features">
+        <div class="card feature-card">
+            <div class="feature-icon">📚</div>
+            <h3>Smart Course Building</h3>
+            <p class="mt-2 text-secondary">Teachers can quickly structure courses, units, and topics while uploading raw PDF materials.</p>
+        </div>
+        <div class="card feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>AI Knowledge Extraction</h3>
+            <p class="mt-2 text-secondary">Our engine processes materials to generate structured Q&A, tailored to academic levels.</p>
+        </div>
+        <div class="card feature-card">
+            <div class="feature-icon">✅</div>
+            <h3>Teacher Verification</h3>
+            <p class="mt-2 text-secondary">Maintain quality control. Teachers review, edit, and approve all AI-generated content before students see it.</p>
+        </div>
+    </section>
+
+</body>
+</html>

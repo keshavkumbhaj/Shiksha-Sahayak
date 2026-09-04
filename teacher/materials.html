@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Materials - Shiksha Sahayak</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/teacher.css">
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon">SS</div>
+                <h3 style="margin:0; font-size:1.125rem;">Shiksha Sahayak</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+                <a href="course.html" class="nav-item">📚 Manage Courses</a>
+                <a href="materials.html" class="nav-item active">📁 Upload Materials</a>
+                <a href="review.html" class="nav-item">✅ Review Content</a>
+                <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <a href="../role-selector.html" class="nav-item" style="color: var(--danger-color);">🚪 Logout</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <h2 style="margin:0; font-size:1.25rem;">Upload Course Materials</h2>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <div class="card">
+                    <h3>Select Destination</h3>
+                    <p class="text-secondary mb-4">Choose where to upload the material.</p>
+                    
+                    <div class="flex gap-4" style="flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 200px;">
+                            <label class="form-label">Course</label>
+                            <select class="form-control" id="course-select">
+                                <option value="">Select Course...</option>
+                                <option value="cs101">Introduction to Computer Science</option>
+                                <option value="ds200">Data Structures</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 200px;">
+                            <label class="form-label">Unit</label>
+                            <select class="form-control" id="unit-select">
+                                <option value="">Select Unit...</option>
+                                <option value="u1">Unit 1: Fundamentals</option>
+                                <option value="u2">Unit 2: Advanced Topics</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 200px;">
+                            <label class="form-label">Topic</label>
+                            <select class="form-control" id="topic-select">
+                                <option value="">Select Topic...</option>
+                                <option value="t1">Topic 1: Introduction</option>
+                                <option value="t2">Topic 2: Core Concepts</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Upload PDF</h3>
+                    <p class="text-secondary mb-4">Upload a PDF document. The AI will extract content and generate questions.</p>
+                    
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="upload-icon">📄</div>
+                        <h3>Drag & Drop PDF here</h3>
+                        <p class="upload-hint">or click to browse files</p>
+                        <input type="file" id="file-upload" class="file-input" accept=".pdf">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Recent Uploads</h3>
+                    <div class="material-list" id="material-list">
+                        <!-- Simulated uploads will appear here -->
+                        
+                        <!-- Mock historical upload -->
+                        <div class="material-item">
+                            <div class="material-info">
+                                <span class="material-icon">📄</span>
+                                <div>
+                                    <div style="font-weight:500;">Chapter_1_Notes.pdf</div>
+                                    <div style="font-size:0.75rem;color:var(--text-secondary);">Course: Data Structures > Unit 1</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-success">Processed</span>
+                        </div>
+
+                        <div class="material-item">
+                            <div class="material-info">
+                                <span class="material-icon">📄</span>
+                                <div>
+                                    <div style="font-weight:500;">Syllabus_draft.pdf</div>
+                                    <div style="font-size:0.75rem;color:var(--text-secondary);">Course: Intro to CS > Unit 1</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-danger">Failed</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/teacher.js"></script>
+</body>
+</html>

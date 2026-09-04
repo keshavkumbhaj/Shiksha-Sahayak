@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Shiksha Sahayak</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/teacher.css">
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon">SS</div>
+                <h3 style="margin:0; font-size:1.125rem;">Shiksha Sahayak</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">📊 Dashboard</a>
+                <a href="course.html" class="nav-item">📚 Manage Courses</a>
+                <a href="materials.html" class="nav-item">📁 Upload Materials</a>
+                <a href="review.html" class="nav-item">✅ Review Content</a>
+                <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <a href="../role-selector.html" class="nav-item" style="color: var(--danger-color);">🚪 Logout</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h2 style="margin:0; font-size:1.25rem;">Dashboard Overview</h2>
+                <div class="flex items-center gap-2">
+                    <span class="badge badge-primary">Prof. Sharma</span>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <div class="stat-icon blue">📚</div>
+                        <div class="stat-details">
+                            <h4>Total Courses</h4>
+                            <p>4</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon green">📁</div>
+                        <div class="stat-details">
+                            <h4>Uploaded Materials</h4>
+                            <p>12</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon orange">📝</div>
+                        <div class="stat-details">
+                            <h4>Pending Reviews</h4>
+                            <p>8</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon red">🎓</div>
+                        <div class="stat-details">
+                            <h4>Enrolled Students</h4>
+                            <p>145</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4" style="flex-wrap: wrap;">
+                    
+                    <!-- Quick Actions -->
+                    <div class="card" style="flex: 1; min-width: 300px;">
+                        <h3>Quick Actions</h3>
+                        <p class="text-secondary mb-4">What would you like to do today?</p>
+                        
+                        <div class="flex flex-col gap-2">
+                            <a href="course.html" class="btn btn-primary" style="justify-content: flex-start;">
+                                ➕ Create New Course
+                            </a>
+                            <a href="materials.html" class="btn btn-secondary" style="justify-content: flex-start;">
+                                📤 Upload PDF Material
+                            </a>
+                            <a href="review.html" class="btn btn-secondary" style="justify-content: flex-start;">
+                                ✅ Review Pending AI Answers
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card" style="flex: 2; min-width: 400px;">
+                        <h3>Recent Activity</h3>
+                        <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <th style="padding: 0.5rem; font-weight: 500; color: var(--text-secondary);">Item</th>
+                                    <th style="padding: 0.5rem; font-weight: 500; color: var(--text-secondary);">Type</th>
+                                    <th style="padding: 0.5rem; font-weight: 500; color: var(--text-secondary);">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.75rem 0.5rem;">Intro to AI Chapter 1</td>
+                                    <td style="padding: 0.75rem 0.5rem;">PDF Upload</td>
+                                    <td style="padding: 0.75rem 0.5rem;"><span class="badge badge-success">Processed</span></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.75rem 0.5rem;">Machine Learning Basics</td>
+                                    <td style="padding: 0.75rem 0.5rem;">Course Created</td>
+                                    <td style="padding: 0.75rem 0.5rem;"><span class="badge badge-primary">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0.75rem 0.5rem;">Neural Networks Q&A</td>
+                                    <td style="padding: 0.75rem 0.5rem;">AI Generation</td>
+                                    <td style="padding: 0.75rem 0.5rem;"><span class="badge badge-warning">Pending Review</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/common.js"></script>
+</body>
+</html>
