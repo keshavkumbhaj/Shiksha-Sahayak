@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Shiksha Sahayak</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/student.css">
+</head>
+<body>
+
+    <div class="dashboard-layout" id="student-dashboard-root">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon">SS</div>
+                <div>
+                    <h3 style="margin:0; font-size:1.125rem;">Shiksha Sahayak</h3>
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">Student Portal</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">📊 Dashboard</a>
+                <a href="learning.html" class="nav-item">📖 Learning Setup</a>
+                <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <a href="../role-selector.html" class="nav-item" style="color: var(--danger-color);">🚪 Logout</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h2 style="margin:0; font-size:1.25rem;">Student Dashboard</h2>
+                <div class="flex items-center gap-2">
+                    <span class="badge badge-primary">Keshav (Student)</span>
+                    <span class="badge badge-success">Active Semester</span>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <!-- Welcome Banner with Primary Demo Flow CTA -->
+                <div class="welcome-banner">
+                    <h2>Welcome back, Keshav! 🚀</h2>
+                    <p>Syllabus-aligned AI learning grounded in your teacher's verified academic materials. Select topics, customize your exam marks, and write answers with confidence.</p>
+                    <div class="flex items-center gap-2" style="flex-wrap: wrap;">
+                        <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn" style="background-color: white; color: var(--primary-color); font-weight: 600;">
+                            ⚡ Launch Primary Demo: Normalization (5 Marks, Exam Answer)
+                        </a>
+                        <a href="learning.html" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                            + Custom Topic Setup
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Student Academic Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+                    <div class="card" style="margin-bottom:0; display:flex; align-items:center; gap:1rem;">
+                        <div style="font-size:2rem; width:48px; height:48px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; color:#1d4ed8;">
+                            📚
+                        </div>
+                        <div>
+                            <div style="font-size:0.875rem; color:var(--text-secondary);">Enrolled Courses</div>
+                            <div style="font-size:1.5rem; font-weight:700;">3</div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-bottom:0; display:flex; align-items:center; gap:1rem;">
+                        <div style="font-size:2rem; width:48px; height:48px; border-radius:50%; background:#dcfce3; display:flex; align-items:center; justify-content:center; color:#15803d;">
+                            ✅
+                        </div>
+                        <div>
+                            <div style="font-size:0.875rem; color:var(--text-secondary);">Topics Mastered</div>
+                            <div style="font-size:1.5rem; font-weight:700;">14</div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-bottom:0; display:flex; align-items:center; gap:1rem;">
+                        <div style="font-size:2rem; width:48px; height:48px; border-radius:50%; background:#ffedd5; display:flex; align-items:center; justify-content:center; color:#c2410c;">
+                            📝
+                        </div>
+                        <div>
+                            <div style="font-size:0.875rem; color:var(--text-secondary);">Exam Answers Practiced</div>
+                            <div style="font-size:1.5rem; font-weight:700;">28</div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-bottom:0; display:flex; align-items:center; gap:1rem;">
+                        <div style="font-size:2rem; width:48px; height:48px; border-radius:50%; background:#f3e8ff; display:flex; align-items:center; justify-content:center; color:#7e22ce;">
+                            🛡️
+                        </div>
+                        <div>
+                            <div style="font-size:0.875rem; color:var(--text-secondary);">Teacher Verified Notes</div>
+                            <div style="font-size:1.5rem; font-weight:700;">100%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enrolled Courses Section -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 style="margin:0;">Enrolled Academic Courses</h3>
+                            <p class="text-secondary" style="font-size:0.875rem; margin:0;">Select a syllabus to start topic-specific answer generation.</p>
+                        </div>
+                        <a href="learning.html" class="btn btn-secondary">Open Learning Workspace →</a>
+                    </div>
+
+                    <div class="course-grid">
+                        <!-- Course 1: DBMS -->
+                        <div class="card course-card">
+                            <div>
+                                <div class="course-card-header">
+                                    <div class="course-icon-box dbms">🗄️</div>
+                                    <div style="flex:1;">
+                                        <h4 style="margin:0; font-size:1.125rem;">Database Management Systems</h4>
+                                        <div style="font-size:0.8125rem; color:var(--text-secondary);">Code: CS-301 • Prof. Sharma</div>
+                                    </div>
+                                    <span class="badge badge-primary">4 Units</span>
+                                </div>
+                                <p class="text-secondary" style="font-size:0.875rem;">Relational model, SQL, Normalization (1NF to BCNF), and Concurrency protocols.</p>
+                                
+                                <div class="progress-track">
+                                    <div class="progress-bar" style="width: 75%;"></div>
+                                </div>
+                                <div class="flex justify-between" style="font-size:0.75rem; color:var(--text-secondary); margin-bottom: 1rem;">
+                                    <span>Unit 3: Normalization In Progress</span>
+                                    <span>75%</span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2" style="margin-top: 0.5rem;">
+                                <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-primary w-full">
+                                    Continue: Normalization (5M)
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Course 2: OS -->
+                        <div class="card course-card">
+                            <div>
+                                <div class="course-card-header">
+                                    <div class="course-icon-box os">💻</div>
+                                    <div style="flex:1;">
+                                        <h4 style="margin:0; font-size:1.125rem;">Operating Systems</h4>
+                                        <div style="font-size:0.8125rem; color:var(--text-secondary);">Code: CS-302 • Dr. K. Rao</div>
+                                    </div>
+                                    <span class="badge badge-warning">2 Units</span>
+                                </div>
+                                <p class="text-secondary" style="font-size:0.875rem;">System calls, process scheduling, synchronization, and deadlock avoidance.</p>
+                                
+                                <div class="progress-track">
+                                    <div class="progress-bar" style="width: 45%; background-color: var(--warning-color);"></div>
+                                </div>
+                                <div class="flex justify-between" style="font-size:0.75rem; color:var(--text-secondary); margin-bottom: 1rem;">
+                                    <span>Unit 1: System Calls</span>
+                                    <span>45%</span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2" style="margin-top: 0.5rem;">
+                                <a href="learning.html?course=os&unit=os_u1&topic=os_t1&level=basic&lang=english&marks=5&mode=learn_simply" class="btn btn-secondary w-full">
+                                    Study System Calls
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Course 3: CN -->
+                        <div class="card course-card">
+                            <div>
+                                <div class="course-card-header">
+                                    <div class="course-icon-box cn">🌐</div>
+                                    <div style="flex:1;">
+                                        <h4 style="margin:0; font-size:1.125rem;">Computer Networks</h4>
+                                        <div style="font-size:0.8125rem; color:var(--text-secondary);">Code: CS-303 • Prof. Ananya Gupta</div>
+                                    </div>
+                                    <span class="badge badge-success">2 Units</span>
+                                </div>
+                                <p class="text-secondary" style="font-size:0.875rem;">OSI reference model, TCP/IP stack, sliding window protocols, subnetting.</p>
+                                
+                                <div class="progress-track">
+                                    <div class="progress-bar" style="width: 25%; background-color: var(--success-color);"></div>
+                                </div>
+                                <div class="flex justify-between" style="font-size:0.75rem; color:var(--text-secondary); margin-bottom: 1rem;">
+                                    <span>Unit 1: Protocol Stack</span>
+                                    <span>25%</span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2" style="margin-top: 0.5rem;">
+                                <a href="learning.html?course=cn&unit=cn_u1&topic=cn_t1&level=intermediate&lang=english&marks=10&mode=exam_answer" class="btn btn-secondary w-full">
+                                    Study OSI Model
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Learning History -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 style="margin:0;">Recent Learning Sessions</h3>
+                        <span class="text-secondary" style="font-size:0.875rem;">Grounded on Teacher Materials</span>
+                    </div>
+
+                    <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 500; color: var(--text-secondary);">Course & Topic</th>
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 500; color: var(--text-secondary);">Parameters</th>
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 500; color: var(--text-secondary);">Mode</th>
+                                <th style="padding: 0.75rem 0.5rem; font-weight: 500; color: var(--text-secondary);">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 0.85rem 0.5rem;">
+                                    <strong>Normalization (3NF & BCNF)</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-secondary);">DBMS > Unit 3</div>
+                                </td>
+                                <td style="padding: 0.85rem 0.5rem;">
+                                    <span class="badge badge-primary">5 Marks</span>
+                                    <span class="badge badge-warning">Intermediate</span>
+                                    <span class="badge badge-success">English</span>
+                                </td>
+                                <td style="padding: 0.85rem 0.5rem;">
+                                    <span style="font-weight: 500; color: var(--primary-color);">Exam Answer</span>
+                                </td>
+                                <td style="padding: 0.85rem 0.5rem;">
+                                    <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                                        Resume Session ↻
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 0.85rem 0.5rem;">
+                                    <strong>Dual-Mode Operations</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-secondary);">OS > Unit 1</div>
+                                </td>
+                                <td style="padding: 0.85rem 0.5rem;">
+                                    <span class="badge badge-primary">2 Marks</span>
+                                    <span class="badge badge-warning">Basic</span>
+                                    <span class="badge badge-success">English</span>
+                                </td>
+                                <td style="padding: 0.85rem 0.5rem;">
+                                    <span style="font-weight: 500; color: var(--success-color);">Learn Simply</span>
+                                </td>
+                                <td style="padding: 0.85rem 0.5rem;">
+                                    <a href="learning.html?course=os&unit=os_u1&topic=os_t1&level=basic&lang=english&marks=2&mode=learn_simply" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                                        Resume Session ↻
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/student.js"></script>
+</body>
+</html>

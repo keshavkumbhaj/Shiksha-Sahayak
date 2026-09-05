@@ -1,0 +1,427 @@
+/* Student Dashboard & Learning Interface Specific Styles */
+
+/* Welcome Banner */
+.welcome-banner {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-banner::after {
+    content: "🎓";
+    position: absolute;
+    right: 2rem;
+    bottom: -1rem;
+    font-size: 7rem;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.welcome-banner h2 {
+    color: white;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-banner p {
+    color: #e0e7ff;
+    max-width: 600px;
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.demo-flow-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    padding: 0.4rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+/* Student Course Cards */
+.course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.course-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: #bfdbfe;
+}
+
+.course-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.course-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.course-icon-box.dbms { background-color: #dbeafe; color: #1d4ed8; }
+.course-icon-box.os { background-color: #fef3c7; color: #b45309; }
+.course-icon-box.cn { background-color: #dcfce3; color: #15803d; }
+
+.progress-track {
+    background-color: #e2e8f0;
+    height: 6px;
+    border-radius: 9999px;
+    overflow: hidden;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+    background-color: var(--primary-color);
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.4s ease;
+}
+
+/* Learning Setup Configuration Cards */
+.setup-stepper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.setup-card {
+    border: 1px solid var(--border-color);
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+}
+
+.setup-card.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.setup-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.step-num {
+    width: 28px;
+    height: 28px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.step-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.step-desc {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Option Pill Selector Grid */
+.pill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.75rem;
+}
+
+.pill-card {
+    border: 1.5px solid var(--border-color);
+    background-color: var(--surface-color);
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pill-card:hover {
+    border-color: var(--primary-color);
+    background-color: #eff6ff;
+}
+
+.pill-card.selected {
+    border-color: var(--primary-color);
+    background-color: #eff6ff;
+    color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.pill-card .pill-icon {
+    font-size: 1.25rem;
+}
+
+.pill-card .pill-title {
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+.pill-card .pill-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.pill-card.selected .pill-subtitle {
+    color: #3b82f6;
+}
+
+/* Mode Selection Cards (Learn Simply vs Exam Answer) */
+.mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.mode-card {
+    border: 2px solid var(--border-color);
+    background-color: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mode-card:hover {
+    border-color: #93c5fd;
+    background-color: #f8fafc;
+}
+
+.mode-card.selected {
+    border-color: var(--primary-color);
+    background-color: #eff6ff;
+    box-shadow: var(--shadow-sm);
+}
+
+.mode-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mode-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mode-desc {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.mode-card.selected .mode-desc {
+    color: #334155;
+}
+
+.mode-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+}
+
+.mode-tag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    background-color: #e2e8f0;
+    color: #475569;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.mode-card.selected .mode-tag {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* Summary & Generation Preview */
+.generation-summary-card {
+    background-color: #f8fafc;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.summary-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.summary-chip {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.summary-chip strong {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Status / Ready State Alert */
+.ready-box {
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    color: #065f46;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.ready-box-icon {
+    font-size: 1.5rem;
+}
+
+.ready-box-content h5 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9375rem;
+    color: #065f46;
+}
+
+.ready-box-content p {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #047857;
+}
+
+/* Empty & Error States */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.6;
+}
+
+/* Loading Simulation Box */
+.loading-box {
+    display: none;
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+}
+
+.loading-box.active {
+    display: block;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Quick Demo Bar */
+.quick-demo-bar {
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.quick-demo-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mode-grid {
+        grid-template-columns: 1fr;
+    }
+    .pill-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .welcome-banner::after {
+        display: none;
+    }
+}
