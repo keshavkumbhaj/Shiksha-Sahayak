@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Setup - Shiksha Sahayak</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/student.css">
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon">SS</div>
+                <div>
+                    <h3 style="margin:0; font-size:1.125rem;">Shiksha Sahayak</h3>
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">Student Portal</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+                <a href="learning.html" class="nav-item active">📖 Learning Setup</a>
+                <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <a href="../role-selector.html" class="nav-item" style="color: var(--danger-color);">🚪 Logout</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="flex items-center gap-2">
+                    <a href="dashboard.html" style="color:var(--text-secondary); text-decoration:none;">Dashboard</a>
+                    <span style="color:var(--text-secondary);">/</span>
+                    <span style="font-weight:600;">Learning Setup</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="badge badge-primary">Student: Keshav</span>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <!-- Quick Demo Flow Preset Bar -->
+                <div class="quick-demo-bar">
+                    <div class="quick-demo-info">
+                        <span style="font-size:1.25rem;">🎯</span>
+                        <div>
+                            <strong>Primary Demo Target:</strong>
+                            <span>DBMS → Unit 3 → Normalization → Intermediate → English → 5 Marks → Exam Answer</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="loadDemoFlow()" style="font-size: 0.8125rem; padding: 0.4rem 0.85rem;">
+                        ⚡ Load Demo Setup
+                    </button>
+                </div>
+
+                <div class="setup-stepper" id="setup-main-card">
+                    
+                    <!-- STEP 1: Syllabus Selection -->
+                    <div class="setup-card">
+                        <div class="setup-header">
+                            <div class="step-num">1</div>
+                            <div>
+                                <h3 class="step-title">Syllabus Selection</h3>
+                                <p class="step-desc">Choose your course, unit, and the specific topic you wish to study.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label">Course</label>
+                            <select class="form-control" id="student-course-select">
+                                <option value="">-- Choose a Course --</option>
+                            </select>
+                        </div>
+
+                        <div class="flex gap-4" style="flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 240px; margin-bottom: 0;">
+                                <label class="form-label">Unit</label>
+                                <select class="form-control" id="student-unit-select" disabled>
+                                    <option value="">-- Select Course First --</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="flex: 1; min-width: 240px; margin-bottom: 0;">
+                                <label class="form-label">Topic</label>
+                                <select class="form-control" id="student-topic-select" disabled>
+                                    <option value="">-- Select Unit First --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Learning Adaptation Parameters -->
+                    <div class="setup-card">
+                        <div class="setup-header">
+                            <div class="step-num">2</div>
+                            <div>
+                                <h3 class="step-title">Learning & Examination Parameters</h3>
+                                <p class="step-desc">Fine-tune the depth, language, target marks, and answering format.</p>
+                            </div>
+                        </div>
+
+                        <!-- 2A. Learning Level Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Learning Level</label>
+                            <div class="pill-grid">
+                                <div class="pill-card" data-level="basic">
+                                    <span class="pill-icon">🌱</span>
+                                    <span class="pill-title">Basic</span>
+                                    <span class="pill-subtitle">Foundational & easy to grasp</span>
+                                </div>
+                                <div class="pill-card selected" data-level="intermediate">
+                                    <span class="pill-icon">⚖️</span>
+                                    <span class="pill-title">Intermediate</span>
+                                    <span class="pill-subtitle">Balanced academic depth</span>
+                                </div>
+                                <div class="pill-card" data-level="advanced">
+                                    <span class="pill-icon">🚀</span>
+                                    <span class="pill-title">Advanced</span>
+                                    <span class="pill-subtitle">Deep technical nuances</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2B. Language Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Preferred Language</label>
+                            <div class="pill-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                                <div class="pill-card selected" data-lang="english">
+                                    <span class="pill-icon">🇬🇧</span>
+                                    <span class="pill-title">English</span>
+                                    <span class="pill-subtitle">Standard technical terms</span>
+                                </div>
+                                <div class="pill-card" data-lang="hindi">
+                                    <span class="pill-icon">🇮🇳</span>
+                                    <span class="pill-title">Hindi (हिन्दी)</span>
+                                    <span class="pill-subtitle">With key technical terms preserved</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2C. Marks Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Target Marks (Examination Requirement)</label>
+                            <div class="pill-grid">
+                                <div class="pill-card" data-marks="2">
+                                    <span class="pill-icon">✏️</span>
+                                    <span class="pill-title">2 Marks</span>
+                                    <span class="pill-subtitle">Short, precise definition (2-3 lines)</span>
+                                </div>
+                                <div class="pill-card selected" data-marks="5">
+                                    <span class="pill-icon">📋</span>
+                                    <span class="pill-title">5 Marks</span>
+                                    <span class="pill-subtitle">Structured, bulleted key points</span>
+                                </div>
+                                <div class="pill-card" data-marks="10">
+                                    <span class="pill-icon">📑</span>
+                                    <span class="pill-title">10 Marks</span>
+                                    <span class="pill-subtitle">Comprehensive explanation + examples</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2D. Mode Selection -->
+                        <div>
+                            <label class="form-label">Learning Mode</label>
+                            <div class="mode-grid">
+                                <div class="mode-card" data-mode="learn_simply">
+                                    <div class="mode-header">
+                                        <div class="mode-title">
+                                            <span>💡</span> Learn Simply
+                                        </div>
+                                    </div>
+                                    <p class="mode-desc">Best for conceptual clarity, simplified analogies, and intuitive understanding before memorizing exam answers.</p>
+                                    <div class="mode-features">
+                                        <span class="mode-tag">Analogies</span>
+                                        <span class="mode-tag">Intuitive</span>
+                                        <span class="mode-tag">Concept-first</span>
+                                    </div>
+                                </div>
+
+                                <div class="mode-card selected" data-mode="exam_answer">
+                                    <div class="mode-header">
+                                        <div class="mode-title">
+                                            <span>🎯</span> Exam Answer
+                                        </div>
+                                        <span class="badge badge-primary">Recommended</span>
+                                    </div>
+                                    <p class="mode-desc">Tailored to syllabus scoring criteria, structured point-wise formatting, and retention of mandatory technical keywords.</p>
+                                    <div class="mode-features">
+                                        <span class="mode-tag">Mark-aligned</span>
+                                        <span class="mode-tag">Technical Keywords</span>
+                                        <span class="mode-tag">Scoring format</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: Verification & Readiness Summary -->
+                    <div class="setup-card" id="summary-card">
+                        <div class="setup-header">
+                            <div class="step-num">3</div>
+                            <div>
+                                <h3 class="step-title">Answer Generation Readiness</h3>
+                                <p class="step-desc">All parameters are grounded in teacher-approved notes before sending to AI.</p>
+                            </div>
+                        </div>
+
+                        <!-- Summary Chips -->
+                        <div class="summary-chips" id="summary-chips">
+                            <!-- Populated dynamically by student.js -->
+                        </div>
+
+                        <!-- Incomplete Alert -->
+                        <div id="incomplete-alert" style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+                            Please select a Course, Unit, and Topic to enable answer generation.
+                        </div>
+
+                        <!-- Ready State Alert -->
+                        <div class="ready-box" id="ready-box" style="display: none;">
+                            <div class="ready-box-icon">✅</div>
+                            <div class="ready-box-content">
+                                <h5>Ready for Grounded Generation</h5>
+                                <p>Syllabus parameters verified against teacher notes. Ready to pass to RAG retrieval and Gemini AI.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex" style="justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                            <a href="dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+                            <button type="button" class="btn btn-primary" id="btn-generate-prep" onclick="prepareGeneration()" disabled>
+                                Ready to Generate Answer 🚀
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Simulated Loading State (When preparing generation) -->
+                    <div class="card loading-box" id="generation-loading">
+                        <div class="spinner"></div>
+                        <h4 style="margin-bottom: 0.25rem;">Preparing Generation Pipeline...</h4>
+                        <p class="text-secondary" style="font-size: 0.875rem;">
+                            Retrieving approved study materials for selected topic and configuring prompt context...
+                        </p>
+                    </div>
+
+                    <!-- Pipeline Preview Box (Where AI Answer will hook in) -->
+                    <div class="card" id="generation-pipeline-preview" style="display: none; border-left: 4px solid var(--primary-color);">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 style="margin:0;">✨ Generation Pipeline Initialized</h3>
+                            <span class="badge badge-success">Ready for Gemini / RAG Hookup</span>
+                        </div>
+                        <p class="text-secondary" style="font-size: 0.9rem;">
+                            The learning configuration has been validated. In the next stage, the backend RAG module will query teacher-approved PDFs and stream the syllabus-aligned response into this container.
+                        </p>
+
+                        <div style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1rem;">
+                            <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">
+                                Active Grounding Context
+                            </div>
+                            <div style="font-size: 0.9375rem; color: var(--text-primary);">
+                                <div><strong>Target Topic:</strong> Normalization (3NF & BCNF)</div>
+                                <div><strong>Unit & Course:</strong> Unit 3 — Database Management Systems (CS-301)</div>
+                                <div><strong>Expected Response Type:</strong> 5 Marks Structured Exam Answer in English (Intermediate Level)</div>
+                                <div><strong>Grounding Source:</strong> Teacher-Uploaded Chapter 3 Notes & Syllabus Guidelines</div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center" style="margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <button type="button" class="btn btn-secondary" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                                ↺ Modify Parameters
+                            </button>
+                            <span style="font-size: 0.8125rem; color: var(--text-secondary);">
+                                Stage 1 Setup Complete • Waiting for Gemini & RAG Backend Integration
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/student.js"></script>
+</body>
+</html>
