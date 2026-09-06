@@ -1,0 +1,3153 @@
+warning: in the working copy of 'js/student.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'js/teacher.js', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/backend/database/models.py b/backend/database/models.py[m
+[1mindex f3d5e7f..389518a 100644[m
+[1m--- a/backend/database/models.py[m
+[1m+++ b/backend/database/models.py[m
+[36m@@ -251,6 +251,35 @@[m [mclass AnswerModel:[m
+         d["keywords_verified"] = bool(d["keywords_verified"])[m
+         return d[m
+ [m
+[32m+[m[32m    @staticmethod[m
+[32m+[m[32m    def get_all(approval_status=None):[m
+[32m+[m[32m        conn = get_db_connection()[m
+[32m+[m[32m        cursor = conn.cursor()[m
+[32m+[m[32m        if approval_status is not None:[m
+[32m+[m[32m            cursor.execute("""[m
+[32m+[m[32m                SELECT answer_id, topic_id, level, language, marks, mode, answer_text,[m
+[32m+[m[32m                       source_reference, source_verified, keywords_verified, approval_status[m
+[32m+[m[32m                FROM answers[m
+[32m+[m[32m                WHERE approval_status = ?[m
+[32m+[m[32m                ORDER BY answer_id DESC[m
+[32m+[m[32m            """, (str(approval_status).strip().lower(),))[m
+[32m+[m[32m        else:[m
+[32m+[m[32m            cursor.execute("""[m
+[32m+[m[32m                SELECT answer_id, topic_id, level, language, marks, mode, answer_text,[m
+[32m+[m[32m                       source_reference, source_verified, keywords_verified, approval_status[m
+[32m+[m[32m                FROM answers[m
+[32m+[m[32m                ORDER BY answer_id DESC[m
+[32m+[m[32m            """)[m
+[32m+[m[32m        rows = cursor.fetchall()[m
+[32m+[m[32m        conn.close()[m
+[32m+[m[32m        results = [][m
+[32m+[m[32m        for row in rows:[m
+[32m+[m[32m            d = dict(row)[m
+[32m+[m[32m            d["source_verified"] = bool(d["source_verified"])[m
+[32m+[m[32m            d["keywords_verified"] = bool(d["keywords_verified"])[m
+[32m+[m[32m            results.append(d)[m
+[32m+[m[32m        return results[m
+[32m+[m
+     @staticmethod[m
+     def update_approval(answer_id, approval_status):[m
+         conn = get_db_connection()[m
+[1mdiff --git a/backend/database/shiksha_db_models.py b/backend/database/shiksha_db_models.py[m
+[1mindex 7a1c6ca..9c59ba2 100644[m
+[1m--- a/backend/database/shiksha_db_models.py[m
+[1m+++ b/backend/database/shiksha_db_models.py[m
+[36m@@ -3,7 +3,7 @@[m [mShiksha Sahayak Database Package (Tanu's Responsibility)[m
+ Exposes database initialization, connection handling, and all entity models.[m
+ """[m
+ [m
+[31m-from backend.database.db import ([m
+[32m+[m[32mfrom backend.database.shiksha_db_core import ([m
+     get_db_path,[m
+     get_db_connection,[m
+     get_db_context,[m
+[1mdiff --git a/backend/routes/answers.py b/backend/routes/answers.py[m
+[1mindex f71d0a7..1c25a86 100644[m
+[1m--- a/backend/routes/answers.py[m
+[1m+++ b/backend/routes/answers.py[m
+[36m@@ -156,6 +156,14 @@[m [mdef generate_answer():[m
+     return jsonify(format_answer_response(created_answer)), 200[m
+ [m
+ [m
+[32m+[m[32m@answers_bp.route("/answers", methods=["GET"])[m
+[32m+[m[32mdef get_answers():[m
+[32m+[m[32m    """Retrieve answers, optionally filtered by approval_status (e.g. ?approval_status=pending)."""[m
+[32m+[m[32m    approval_status = request.args.get("approval_status")[m
+[32m+[m[32m    answers = AnswerModel.get_all(approval_status=approval_status)[m
+[32m+[m[32m    return jsonify([format_answer_response(a) for a in answers]), 200[m
+[32m+[m
+[32m+[m
+ @answers_bp.route("/answers/<int:answer_id>", methods=["GET"])[m
+ def get_answer(answer_id):[m
+     """Retrieve an answer by its ID."""[m
+[1mdiff --git a/css/global.css b/css/global.css[m
+[1mindex cc5145a..7e0738b 100644[m
+[1m--- a/css/global.css[m
+[1m+++ b/css/global.css[m
+[36m@@ -287,6 +287,8 @@[m [mselect.form-control {[m
+ [m
+ .toast.success { border-left-color: var(--success-color); }[m
+ .toast.error { border-left-color: var(--danger-color); }[m
+[32m+[m[32m.toast.warning { border-left-color: var(--warning-color); }[m
+[32m+[m[32m.toast.info { border-left-color: var(--primary-color); }[m
+ [m
+ @keyframes slideIn {[m
+     from { transform: translateX(100%); opacity: 0; }[m
+[1mdiff --git a/css/student.css b/css/student.css[m
+[1mindex 4c80ab6..830823f 100644[m
+[1m--- a/css/student.css[m
+[1m+++ b/css/student.css[m
+[36m@@ -425,3 +425,82 @@[m
+         display: none;[m
+     }[m
+ }[m
+[32m+[m
+[32m+[m[32m/* MCQ Assessment & Weak Topic Styles */[m
+[32m+[m[32m.mcq-question-card {[m
+[32m+[m[32m    background-color: var(--surface-color);[m
+[32m+[m[32m    border: 1px solid var(--border-color);[m
+[32m+[m[32m    border-radius: var(--radius-md);[m
+[32m+[m[32m    padding: 1.25rem;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.mcq-question-text {[m
+[32m+[m[32m    font-size: 0.9375rem;[m
+[32m+[m[32m    font-weight: 600;[m
+[32m+[m[32m    color: var(--text-primary);[m
+[32m+[m[32m    margin-bottom: 0.85rem;[m
+[32m+[m[32m    line-height: 1.5;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.mcq-options-group {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    flex-direction: column;[m
+[32m+[m[32m    gap: 0.5rem;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.mcq-option-label {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    align-items: center;[m
+[32m+[m[32m    gap: 0.75rem;[m
+[32m+[m[32m    padding: 0.75rem 1rem;[m
+[32m+[m[32m    border: 1px solid var(--border-color);[m
+[32m+[m[32m    border-radius: var(--radius-md);[m
+[32m+[m[32m    cursor: pointer;[m
+[32m+[m[32m    transition: all 0.15s ease;[m
+[32m+[m[32m    font-size: 0.875rem;[m
+[32m+[m[32m    background-color: #ffffff;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.mcq-option-label:hover {[m
+[32m+[m[32m    border-color: var(--primary-color);[m
+[32m+[m[32m    background-color: #f8fafc;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.mcq-option-label input[type="radio"] {[m
+[32m+[m[32m    margin: 0;[m
+[32m+[m[32m    accent-color: var(--primary-color);[m
+[32m+[m[32m    cursor: pointer;[m
+[32m+[m[32m    width: 16px;[m
+[32m+[m[32m    height: 16px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.mcq-review-card {[m
+[32m+[m[32m    background-color: var(--surface-color);[m
+[32m+[m[32m    border-radius: var(--radius-md);[m
+[32m+[m[32m    padding: 1rem 1.25rem;[m
+[32m+[m[32m    border: 1px solid var(--border-color);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.mcq-review-card.correct {[m
+[32m+[m[32m    background-color: #f0fdf4;[m
+[32m+[m[32m    border-color: #86efac;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.mcq-review-card.incorrect {[m
+[32m+[m[32m    background-color: #fef2f2;[m
+[32m+[m[32m    border-color: #fca5a5;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.weak-topic-item {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    align-items: center;[m
+[32m+[m[32m    justify-content: space-between;[m
+[32m+[m[32m    padding: 1rem;[m
+[32m+[m[32m    border-bottom: 1px solid var(--border-color);[m
+[32m+[m[32m    gap: 1rem;[m
+[32m+[m[32m    flex-wrap: wrap;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.weak-topic-item:last-child {[m
+[32m+[m[32m    border-bottom: none;[m
+[32m+[m[32m}[m
+[1mdiff --git a/js/common.js b/js/common.js[m
+[1mindex a9fc69d..f6f3bce 100644[m
+[1m--- a/js/common.js[m
+[1m+++ b/js/common.js[m
+[36m@@ -2,6 +2,24 @@[m
+  * Common shared JavaScript functionality[m
+  */[m
+ [m
+[32m+[m[32m// Centralized API Base URL[m
+[32m+[m[32mconst API_BASE_URL = window.location.protocol === 'file:'[m
+[32m+[m[32m    ? 'http://localhost:5000/api'[m
+[32m+[m[32m    : '/api';[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Sanitize string to prevent HTML injection[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction escapeHTML(str) {[m
+[32m+[m[32m    if (str === null || str === undefined) return '';[m
+[32m+[m[32m    return String(str)[m
+[32m+[m[32m        .replace(/&/g, '&amp;')[m
+[32m+[m[32m        .replace(/</g, '&lt;')[m
+[32m+[m[32m        .replace(/>/g, '&gt;')[m
+[32m+[m[32m        .replace(/"/g, '&quot;')[m
+[32m+[m[32m        .replace(/'/g, '&#039;');[m
+[32m+[m[32m}[m
+[32m+[m
+ document.addEventListener('DOMContentLoaded', () => {[m
+     // Inject Toast Container if not present[m
+     if (!document.getElementById('toast-container')) {[m
+[36m@@ -24,7 +42,7 @@[m [mdocument.addEventListener('DOMContentLoaded', () => {[m
+ /**[m
+  * Show a toast notification[m
+  * @param {string} message [m
+[31m- * @param {string} type 'success', 'error', 'info'[m
+[32m+[m[32m * @param {string} type 'success', 'error', 'info', 'warning'[m
+  */[m
+ function showToast(message, type = 'info') {[m
+     const container = document.getElementById('toast-container');[m
+[36m@@ -37,10 +55,11 @@[m [mfunction showToast(message, type = 'info') {[m
+     let icon = 'ℹ️';[m
+     if (type === 'success') icon = '✅';[m
+     if (type === 'error') icon = '❌';[m
+[32m+[m[32m    if (type === 'warning') icon = '⚠️';[m
+ [m
+     toast.innerHTML = `[m
+         <span class="toast-icon">${icon}</span>[m
+[31m-        <span class="toast-message">${message}</span>[m
+[32m+[m[32m        <span class="toast-message">${escapeHTML(message)}</span>[m
+     `;[m
+ [m
+     container.appendChild(toast);[m
+[1mdiff --git a/js/student.js b/js/student.js[m
+[1mindex e6aa8cf..9746ba1 100644[m
+[1m--- a/js/student.js[m
+[1m+++ b/js/student.js[m
+[36m@@ -1,119 +1,29 @@[m
+ /**[m
+  * Student Module JavaScript[m
+[31m- * Handles Student Dashboard and Interactive Learning Setup[m
+[32m+[m[32m * Handles Dynamic Student Course -> Unit -> Topic Selection from Backend[m
+[32m+[m[32m * and Verified Student Adaptation Preference State[m
+  */[m
+ [m
+[31m-// Mock Academic Knowledge Base (Courses, Units, Topics)[m
+[31m-const COURSE_SYLLABUS = {[m
+[31m-    dbms: {[m
+[31m-        id: "dbms",[m
+[31m-        name: "Database Management Systems (CS-301)",[m
+[31m-        shortName: "DBMS",[m
+[31m-        icon: "🗄️",[m
+[31m-        colorClass: "dbms",[m
+[31m-        teacher: "Prof. Sharma",[m
+[31m-        units: [[m
+[31m-            {[m
+[31m-                id: "u1",[m
+[31m-                name: "Unit 1: Introduction to DBMS",[m
+[31m-                topics: [[m
+[31m-                    { id: "t_arch", name: "Database Architecture & 3-Tier Schema" },[m
+[31m-                    { id: "t_indep", name: "Physical & Logical Data Independence" },[m
+[31m-                    { id: "t_er", name: "ER Modeling & Key Constraints" }[m
+[31m-                ][m
+[31m-            },[m
+[31m-            {[m
+[31m-                id: "u2",[m
+[31m-                name: "Unit 2: Relational Model & SQL",[m
+[31m-                topics: [[m
+[31m-                    { id: "t_relalg", name: "Relational Algebra Operations" },[m
+[31m-                    { id: "t_sql", name: "DDL, DML, and Aggregate SQL Queries" },[m
+[31m-                    { id: "t_joins", name: "SQL Joins & Integrity Constraints" }[m
+[31m-                ][m
+[31m-            },[m
+[31m-            {[m
+[31m-                id: "u3",[m
+[31m-                name: "Unit 3: Normalization & Functional Dependencies",[m
+[31m-                topics: [[m
+[31m-                    { id: "t_fd", name: "Functional Dependencies & Attribute Closure" },[m
+[31m-                    { id: "t_1nf2nf", name: "First & Second Normal Form (1NF & 2NF)" },[m
+[31m-                    { id: "t_norm", name: "Normalization (3NF & BCNF)" },[m
+[31m-                    { id: "t_mvd", name: "Multivalued Dependencies & 4NF" }[m
+[31m-                ][m
+[31m-            },[m
+[31m-            {[m
+[31m-                id: "u4",[m
+[31m-                name: "Unit 4: Transaction Processing & Concurrency",[m
+[31m-                topics: [[m
+[31m-                    { id: "t_acid", name: "Transaction States & ACID Properties" },[m
+[31m-                    { id: "t_ser", name: "Conflict & View Serializability" },[m
+[31m-                    { id: "t_lock", name: "Two-Phase Locking (2PL) Protocol" }[m
+[31m-                ][m
+[31m-            }[m
+[31m-        ][m
+[31m-    },[m
+[31m-    os: {[m
+[31m-        id: "os",[m
+[31m-        name: "Operating Systems (CS-302)",[m
+[31m-        shortName: "OS",[m
+[31m-        icon: "💻",[m
+[31m-        colorClass: "os",[m
+[31m-        teacher: "Dr. K. Rao",[m
+[31m-        units: [[m
+[31m-            {[m
+[31m-                id: "os_u1",[m
+[31m-                name: "Unit 1: OS Structures & System Calls",[m
+[31m-                topics: [[m
+[31m-                    { id: "os_t1", name: "Dual-Mode Operations & System Calls" },[m
+[31m-                    { id: "os_t2", name: "Kernel Architectures (Monolithic vs Micro)" }[m
+[31m-                ][m
+[31m-            },[m
+[31m-            {[m
+[31m-                id: "os_u2",[m
+[31m-                name: "Unit 2: Process Synchronization & Deadlocks",[m
+[31m-                topics: [[m
+[31m-                    { id: "os_t3", name: "Critical Section & Peterson's Algorithm" },[m
+[31m-                    { id: "os_t4", name: "Banker's Algorithm for Deadlock Avoidance" }[m
+[31m-                ][m
+[31m-            }[m
+[31m-        ][m
+[31m-    },[m
+[31m-    cn: {[m
+[31m-        id: "cn",[m
+[31m-        name: "Computer Networks (CS-303)",[m
+[31m-        shortName: "CN",[m
+[31m-        icon: "🌐",[m
+[31m-        colorClass: "cn",[m
+[31m-        teacher: "Prof. Ananya Gupta",[m
+[31m-        units: [[m
+[31m-            {[m
+[31m-                id: "cn_u1",[m
+[31m-                name: "Unit 1: Physical & Data Link Layer",[m
+[31m-                topics: [[m
+[31m-                    { id: "cn_t1", name: "OSI Reference Model vs TCP/IP" },[m
+[31m-                    { id: "cn_t2", name: "Sliding Window Protocols (Go-Back-N, SR)" }[m
+[31m-                ][m
+[31m-            },[m
+[31m-            {[m
+[31m-                id: "cn_u2",[m
+[31m-                name: "Unit 2: Network Layer & Routing",[m
+[31m-                topics: [[m
+[31m-                    { id: "cn_t3", name: "IPv4 Subnetting & CIDR" },[m
+[31m-                    { id: "cn_t4", name: "Distance Vector vs Link State Routing" }[m
+[31m-                ][m
+[31m-            }[m
+[31m-        ][m
+[31m-    }[m
+[31m-};[m
+[32m+[m[32mconst STUDENT_API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '/api';[m
+[32m+[m
+[32m+[m[32m// Allowed backend contract values[m
+[32m+[m[32mconst VALID_LEVELS = ["basic", "intermediate", "advanced"];[m
+[32m+[m[32mconst VALID_LANGUAGES = ["english", "hindi"];[m
+[32m+[m[32mconst VALID_MARKS = [2, 5, 10];[m
+[32m+[m[32mconst VALID_MODES = ["exam", "exam_answer", "learn", "learn_simply"];[m
+[32m+[m
+[32m+[m[32m// State for dynamically loaded syllabus data from backend[m
+[32m+[m[32mlet availableCourses = [];         // Array from GET /api/courses[m
+[32m+[m[32mlet currentCourseHierarchy = null; // Object from GET /api/courses/<id>[m
+ [m
+[31m-// Current Learning Setup Configuration State[m
+[32m+[m[32m// Current Learning Setup Configuration State (using real numeric IDs and validated types)[m
+ const learningConfig = {[m
+[31m-    courseId: "",[m
+[31m-    unitId: "",[m
+[31m-    topicId: "",[m
+[32m+[m[32m    courseId: null,        // numeric course_id (integer)[m
+[32m+[m[32m    unitId: null,          // numeric unit_id (integer)[m
+[32m+[m[32m    topicId: null,         // numeric topic_id (integer)[m
+     level: "intermediate", // 'basic' | 'intermediate' | 'advanced'[m
+     language: "english",   // 'english' | 'hindi'[m
+[31m-    marks: "5",            // '2' | '5' | '10'[m
+[32m+[m[32m    marks: 5,              // 2 | 5 | 10 (integer)[m
+     mode: "exam_answer"    // 'learn_simply' | 'exam_answer'[m
+ };[m
+ [m
+[36m@@ -121,74 +31,156 @@[m [mconst learningConfig = {[m
+    Learning Setup Controller (learning.html)[m
+    ========================================================= */[m
+ [m
+[31m-function initLearningSetup() {[m
+[31m-    populateCourseDropdown();[m
+[32m+[m[32masync function initLearningSetup() {[m
+     attachPillSelectorEvents();[m
+ [m
+[31m-    // Check URL search parameters or demo defaults[m
+[32m+[m[32m    // 1. Fetch courses from GET /api/courses[m
+[32m+[m[32m    await loadStudentCourses();[m
+[32m+[m
+[32m+[m[32m    // 2. Check URL search parameters[m
+     const urlParams = new URLSearchParams(window.location.search);[m
+[31m-    const courseParam = urlParams.get('course');[m
+[31m-    const unitParam = urlParams.get('unit');[m
+[31m-    const topicParam = urlParams.get('topic');[m
+[32m+[m[32m    const courseParam = urlParams.get('course_id') || urlParams.get('course');[m
+[32m+[m[32m    const unitParam = urlParams.get('unit_id') || urlParams.get('unit');[m
+[32m+[m[32m    const topicParam = urlParams.get('topic_id') || urlParams.get('topic');[m
+     const levelParam = urlParams.get('level');[m
+     const langParam = urlParams.get('lang');[m
+     const marksParam = urlParams.get('marks');[m
+     const modeParam = urlParams.get('mode');[m
+ [m
+[31m-    if (courseParam && COURSE_SYLLABUS[courseParam]) {[m
+[31m-        learningConfig.courseId = courseParam;[m
+[31m-        if (unitParam) learningConfig.unitId = unitParam;[m
+[31m-        if (topicParam) learningConfig.topicId = topicParam;[m
+[31m-        if (levelParam) learningConfig.level = levelParam;[m
+[31m-        if (langParam) learningConfig.language = langParam;[m
+[31m-        if (marksParam) learningConfig.marks = marksParam;[m
+[31m-        if (modeParam) learningConfig.mode = modeParam;[m
+[31m-        syncStateToUI();[m
+[31m-    } else {[m
+[31m-        // Check saved session or start with empty course selection[m
+[31m-        const saved = localStorage.getItem('shiksha_student_setup');[m
+[31m-        if (saved) {[m
+[31m-            try {[m
+[31m-                const parsed = JSON.parse(saved);[m
+[31m-                Object.assign(learningConfig, parsed);[m
+[31m-                syncStateToUI();[m
+[31m-            } catch (e) {[m
+[31m-                // Ignore parse errors and fallback[m
+[31m-            }[m
+[32m+[m[32m    if (levelParam && VALID_LEVELS.includes(levelParam.toLowerCase())) {[m
+[32m+[m[32m        learningConfig.level = levelParam.toLowerCase();[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (langParam && VALID_LANGUAGES.includes(langParam.toLowerCase())) {[m
+[32m+[m[32m        learningConfig.language = langParam.toLowerCase();[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (marksParam) {[m
+[32m+[m[32m        const parsedMarks = parseInt(marksParam, 10);[m
+[32m+[m[32m        if (VALID_MARKS.includes(parsedMarks)) {[m
+[32m+[m[32m            learningConfig.marks = parsedMarks;[m
+         }[m
+     }[m
+[32m+[m[32m    if (modeParam && VALID_MODES.includes(modeParam.toLowerCase())) {[m
+[32m+[m[32m        learningConfig.mode = modeParam.toLowerCase();[m
+[32m+[m[32m    }[m
+[32m+[m[32m    syncPillsToUI();[m
+ [m
+[31m-    updateSummaryAndReadiness();[m
+[32m+[m[32m    if (courseParam) {[m
+[32m+[m[32m        let matchedCourseId = parseInt(courseParam, 10);[m
+[32m+[m[32m        if (isNaN(matchedCourseId) && availableCourses.length > 0) {[m
+[32m+[m[32m            const found = availableCourses.find(c => c.course_name.toLowerCase().includes(courseParam.toLowerCase()));[m
+[32m+[m[32m            matchedCourseId = found ? found.course_id : availableCourses[0].course_id;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (!isNaN(matchedCourseId)) {[m
+[32m+[m[32m            const courseSelect = document.getElementById('student-course-select');[m
+[32m+[m[32m            if (courseSelect) {[m
+[32m+[m[32m                courseSelect.value = String(matchedCourseId);[m
+[32m+[m[32m            }[m
+[32m+[m[32m            await onCourseChange(matchedCourseId);[m
+[32m+[m
+[32m+[m[32m            let matchedUnitId = parseInt(unitParam, 10);[m
+[32m+[m[32m            if (isNaN(matchedUnitId) && currentCourseHierarchy && currentCourseHierarchy.units && currentCourseHierarchy.units.length > 0) {[m
+[32m+[m[32m                if (topicParam) {[m
+[32m+[m[32m                    const tVal = parseInt(topicParam, 10);[m
+[32m+[m[32m                    const parentUnit = currentCourseHierarchy.units.find(u => u.topics && u.topics.some(t => t.topic_id === tVal || (isNaN(tVal) && t.topic_name.toLowerCase().includes(topicParam.toLowerCase()))));[m
+[32m+[m[32m                    if (parentUnit) matchedUnitId = parentUnit.unit_id;[m
+[32m+[m[32m                }[m
+[32m+[m[32m                if (isNaN(matchedUnitId)) {[m
+[32m+[m[32m                    if (unitParam === 'u3' || unitParam === '3') {[m
+[32m+[m[32m                        const u = currentCourseHierarchy.units.find(u => u.unit_number === 3 || u.unit_id === 1);[m
+[32m+[m[32m                        if (u) matchedUnitId = u.unit_id;[m
+[32m+[m[32m                    } else {[m
+[32m+[m[32m                        matchedUnitId = currentCourseHierarchy.units[0].unit_id;[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            if (!isNaN(matchedUnitId) && currentCourseHierarchy) {[m
+[32m+[m[32m                const unitSelect = document.getElementById('student-unit-select');[m
+[32m+[m[32m                if (unitSelect) {[m
+[32m+[m[32m                    unitSelect.value = String(matchedUnitId);[m
+[32m+[m[32m                }[m
+[32m+[m[32m                onUnitChange(matchedUnitId);[m
+[32m+[m
+[32m+[m[32m                let matchedTopicId = parseInt(topicParam, 10);[m
+[32m+[m[32m                if (isNaN(matchedTopicId) && currentCourseHierarchy && currentCourseHierarchy.units) {[m
+[32m+[m[32m                    const unitObj = currentCourseHierarchy.units.find(u => u.unit_id === matchedUnitId);[m
+[32m+[m[32m                    if (unitObj && unitObj.topics && unitObj.topics.length > 0) {[m
+[32m+[m[32m                        if (topicParam === 't_norm') {[m
+[32m+[m[32m                            const t = unitObj.topics.find(t => t.topic_name.toLowerCase().includes('normalization'));[m
+[32m+[m[32m                            matchedTopicId = t ? t.topic_id : unitObj.topics[0].topic_id;[m
+[32m+[m[32m                        } else {[m
+[32m+[m[32m                            matchedTopicId = unitObj.topics[0].topic_id;[m
+[32m+[m[32m                        }[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[32m                if (!isNaN(matchedTopicId)) {[m
+[32m+[m[32m                    const topicSelect = document.getElementById('student-topic-select');[m
+[32m+[m[32m                    if (topicSelect) {[m
+[32m+[m[32m                        topicSelect.value = String(matchedTopicId);[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                    onTopicChange(matchedTopicId);[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m        updateSummaryAndReadiness();[m
+[32m+[m[32m    }[m
+ }[m
+ [m
+ /**[m
+[31m- * Populates the course select dropdown[m
+[32m+[m[32m * Loads courses from backend GET /api/courses and populates dropdown[m
+  */[m
+[31m-function populateCourseDropdown() {[m
+[32m+[m[32masync function loadStudentCourses() {[m
+     const courseSelect = document.getElementById('student-course-select');[m
+     if (!courseSelect) return;[m
+ [m
+[31m-    courseSelect.innerHTML = '<option value="">-- Choose a Course --</option>';[m
+[31m-    Object.keys(COURSE_SYLLABUS).forEach(key => {[m
+[31m-        const course = COURSE_SYLLABUS[key];[m
+[31m-        const opt = document.createElement('option');[m
+[31m-        opt.value = course.id;[m
+[31m-        opt.textContent = `${course.name} (${course.teacher})`;[m
+[31m-        courseSelect.appendChild(opt);[m
+[31m-    });[m
+[32m+[m[32m    courseSelect.innerHTML = '<option value="">Loading courses from database...</option>';[m
+ [m
+[31m-    courseSelect.addEventListener('change', (e) => {[m
+[31m-        onCourseChange(e.target.value);[m
+[31m-    });[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${STUDENT_API_BASE}/courses`);[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            throw new Error(`Server returned status ${res.status}`);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m[32m        availableCourses = Array.isArray(data) ? data : (data.courses || []);[m
+[32m+[m
+[32m+[m[32m        courseSelect.innerHTML = '<option value="">-- Choose a Course --</option>';[m
+[32m+[m[32m        if (availableCourses.length === 0) {[m
+[32m+[m[32m            courseSelect.innerHTML = '<option value="">No courses available</option>';[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        availableCourses.forEach(c => {[m
+[32m+[m[32m            const opt = document.createElement('option');[m
+[32m+[m[32m            opt.value = c.course_id; // Store real numeric ID[m
+[32m+[m[32m            opt.textContent = `${c.course_name} (ID: ${c.course_id})`;[m
+[32m+[m[32m            courseSelect.appendChild(opt);[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        courseSelect.addEventListener('change', async (e) => {[m
+[32m+[m[32m            const val = e.target.value;[m
+[32m+[m[32m            await onCourseChange(val ? parseInt(val, 10) : null);[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Failed to load courses for student:', err);[m
+[32m+[m[32m        courseSelect.innerHTML = '<option value="">Failed to load courses</option>';[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Unable to connect to courses backend API.', 'error');[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+ }[m
+ [m
+ /**[m
+[31m- * Handle Course selection change[m
+[32m+[m[32m * Handles Course selection change and retrieves hierarchy via GET /api/courses/<id>[m
+  */[m
+[31m-function onCourseChange(courseId) {[m
+[31m-    learningConfig.courseId = courseId;[m
+[31m-    learningConfig.unitId = "";[m
+[31m-    learningConfig.topicId = "";[m
+[32m+[m[32masync function onCourseChange(courseId) {[m
+[32m+[m[32m    learningConfig.courseId = courseId ? parseInt(courseId, 10) : null;[m
+[32m+[m[32m    learningConfig.unitId = null;[m
+[32m+[m[32m    learningConfig.topicId = null;[m
+[32m+[m[32m    currentCourseHierarchy = null;[m
+ [m
+     const unitSelect = document.getElementById('student-unit-select');[m
+     const topicSelect = document.getElementById('student-topic-select');[m
+[36m@@ -198,69 +190,106 @@[m [mfunction onCourseChange(courseId) {[m
+     topicSelect.innerHTML = '<option value="">-- Select Unit First --</option>';[m
+     topicSelect.disabled = true;[m
+ [m
+[31m-    if (!courseId || !COURSE_SYLLABUS[courseId]) {[m
+[32m+[m[32m    if (!courseId) {[m
+         unitSelect.innerHTML = '<option value="">-- Select Course First --</option>';[m
+         unitSelect.disabled = true;[m
+         updateSummaryAndReadiness();[m
+         return;[m
+     }[m
+ [m
+[31m-    unitSelect.disabled = false;[m
+[31m-    unitSelect.innerHTML = '<option value="">-- Choose a Unit --</option>';[m
+[31m-    [m
+[31m-    COURSE_SYLLABUS[courseId].units.forEach(unit => {[m
+[31m-        const opt = document.createElement('option');[m
+[31m-        opt.value = unit.id;[m
+[31m-        opt.textContent = unit.name;[m
+[31m-        unitSelect.appendChild(opt);[m
+[31m-    });[m
+[32m+[m[32m    unitSelect.disabled = true;[m
+[32m+[m[32m    unitSelect.innerHTML = '<option value="">Loading units...</option>';[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${STUDENT_API_BASE}/courses/${courseId}`);[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            throw new Error(`Failed to load course details (${res.status})`);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        currentCourseHierarchy = await res.json();[m
+[32m+[m
+[32m+[m[32m        const units = currentCourseHierarchy.units || [];[m
+[32m+[m[32m        if (units.length === 0) {[m
+[32m+[m[32m            unitSelect.innerHTML = '<option value="">No units available for this course</option>';[m
+[32m+[m[32m            unitSelect.disabled = true;[m
+[32m+[m[32m            updateSummaryAndReadiness();[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        unitSelect.innerHTML = '<option value="">-- Choose a Unit --</option>';[m
+[32m+[m[32m        units.forEach(unit => {[m
+[32m+[m[32m            const opt = document.createElement('option');[m
+[32m+[m[32m            opt.value = unit.unit_id; // Store real numeric ID[m
+[32m+[m[32m            opt.textContent = unit.unit_name || `Unit ${unit.unit_number}`;[m
+[32m+[m[32m            unitSelect.appendChild(opt);[m
+[32m+[m[32m        });[m
+[32m+[m[32m        unitSelect.disabled = false;[m
+[32m+[m
+[32m+[m[32m        unitSelect.onchange = (e) => {[m
+[32m+[m[32m            const uVal = e.target.value;[m
+[32m+[m[32m            onUnitChange(uVal ? parseInt(uVal, 10) : null);[m
+[32m+[m[32m        };[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Error fetching course hierarchy:', err);[m
+[32m+[m[32m        unitSelect.innerHTML = '<option value="">Error loading units</option>';[m
+[32m+[m[32m        unitSelect.disabled = true;[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Error loading course syllabus units.', 'error');[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+ [m
+[31m-    unitSelect.onchange = (e) => onUnitChange(e.target.value);[m
+     updateSummaryAndReadiness();[m
+ }[m
+ [m
+ /**[m
+[31m- * Handle Unit selection change[m
+[32m+[m[32m * Handles Unit selection change and populates topics dynamically[m
+  */[m
+ function onUnitChange(unitId) {[m
+[31m-    learningConfig.unitId = unitId;[m
+[31m-    learningConfig.topicId = "";[m
+[32m+[m[32m    learningConfig.unitId = unitId ? parseInt(unitId, 10) : null;[m
+[32m+[m[32m    learningConfig.topicId = null;[m
+ [m
+     const topicSelect = document.getElementById('student-topic-select');[m
+     if (!topicSelect) return;[m
+ [m
+[31m-    if (!unitId) {[m
+[32m+[m[32m    if (!unitId || !currentCourseHierarchy) {[m
+         topicSelect.innerHTML = '<option value="">-- Select Unit First --</option>';[m
+         topicSelect.disabled = true;[m
+         updateSummaryAndReadiness();[m
+         return;[m
+     }[m
+ [m
+[31m-    const course = COURSE_SYLLABUS[learningConfig.courseId];[m
+[31m-    if (!course) return;[m
+[31m-[m
+[31m-    const unit = course.units.find(u => u.id === unitId);[m
+[31m-    if (!unit) return;[m
+[32m+[m[32m    const units = currentCourseHierarchy.units || [];[m
+[32m+[m[32m    const unit = units.find(u => u.unit_id === learningConfig.unitId);[m
+[32m+[m[32m    if (!unit || !unit.topics || unit.topics.length === 0) {[m
+[32m+[m[32m        topicSelect.innerHTML = '<option value="">No topics in this unit</option>';[m
+[32m+[m[32m        topicSelect.disabled = true;[m
+[32m+[m[32m        updateSummaryAndReadiness();[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+ [m
+     topicSelect.disabled = false;[m
+     topicSelect.innerHTML = '<option value="">-- Choose a Topic --</option>';[m
+ [m
+     unit.topics.forEach(topic => {[m
+         const opt = document.createElement('option');[m
+[31m-        opt.value = topic.id;[m
+[31m-        opt.textContent = topic.name;[m
+[32m+[m[32m        opt.value = topic.topic_id; // Store real numeric ID[m
+[32m+[m[32m        opt.textContent = topic.topic_name;[m
+         topicSelect.appendChild(opt);[m
+     });[m
+ [m
+[31m-    topicSelect.onchange = (e) => onTopicChange(e.target.value);[m
+[32m+[m[32m    topicSelect.onchange = (e) => {[m
+[32m+[m[32m        const tVal = e.target.value;[m
+[32m+[m[32m        onTopicChange(tVal ? parseInt(tVal, 10) : null);[m
+[32m+[m[32m    };[m
+[32m+[m
+     updateSummaryAndReadiness();[m
+ }[m
+ [m
+ /**[m
+[31m- * Handle Topic selection change[m
+[32m+[m[32m * Handles Topic selection change[m
+  */[m
+ function onTopicChange(topicId) {[m
+[31m-    learningConfig.topicId = topicId;[m
+[32m+[m[32m    learningConfig.topicId = topicId ? parseInt(topicId, 10) : null;[m
+     updateSummaryAndReadiness();[m
+     saveSetupState();[m
+ }[m
+[36m@@ -272,62 +301,104 @@[m [mfunction attachPillSelectorEvents() {[m
+     // Level selection[m
+     document.querySelectorAll('[data-level]').forEach(el => {[m
+         el.addEventListener('click', () => {[m
+[31m-            document.querySelectorAll('[data-level]').forEach(p => p.classList.remove('selected'));[m
+[31m-            el.classList.add('selected');[m
+[31m-            learningConfig.level = el.getAttribute('data-level');[m
+[31m-            updateSummaryAndReadiness();[m
+[31m-            saveSetupState();[m
+[32m+[m[32m            const val = el.getAttribute('data-level');[m
+[32m+[m[32m            if (VALID_LEVELS.includes(val)) {[m
+[32m+[m[32m                document.querySelectorAll('[data-level]').forEach(p => p.classList.remove('selected'));[m
+[32m+[m[32m                el.classList.add('selected');[m
+[32m+[m[32m                learningConfig.level = val;[m
+[32m+[m[32m                updateSummaryAndReadiness();[m
+[32m+[m[32m                saveSetupState();[m
+[32m+[m[32m            }[m
+         });[m
+     });[m
+ [m
+     // Language selection[m
+     document.querySelectorAll('[data-lang]').forEach(el => {[m
+         el.addEventListener('click', () => {[m
+[31m-            document.querySelectorAll('[data-lang]').forEach(p => p.classList.remove('selected'));[m
+[31m-            el.classList.add('selected');[m
+[31m-            learningConfig.language = el.getAttribute('data-lang');[m
+[31m-            updateSummaryAndReadiness();[m
+[31m-            saveSetupState();[m
+[32m+[m[32m            const val = el.getAttribute('data-lang');[m
+[32m+[m[32m            if (VALID_LANGUAGES.includes(val)) {[m
+[32m+[m[32m                document.querySelectorAll('[data-lang]').forEach(p => p.classList.remove('selected'));[m
+[32m+[m[32m                el.classList.add('selected');[m
+[32m+[m[32m                learningConfig.language = val;[m
+[32m+[m[32m                updateSummaryAndReadiness();[m
+[32m+[m[32m                saveSetupState();[m
+[32m+[m[32m            }[m
+         });[m
+     });[m
+ [m
+[31m-    // Marks selection[m
+[32m+[m[32m    // Marks selection (ensures integer storage)[m
+     document.querySelectorAll('[data-marks]').forEach(el => {[m
+         el.addEventListener('click', () => {[m
+[31m-            document.querySelectorAll('[data-marks]').forEach(p => p.classList.remove('selected'));[m
+[31m-            el.classList.add('selected');[m
+[31m-            learningConfig.marks = el.getAttribute('data-marks');[m
+[31m-            updateSummaryAndReadiness();[m
+[31m-            saveSetupState();[m
+[32m+[m[32m            const val = parseInt(el.getAttribute('data-marks'), 10);[m
+[32m+[m[32m            if (VALID_MARKS.includes(val)) {[m
+[32m+[m[32m                document.querySelectorAll('[data-marks]').forEach(p => p.classList.remove('selected'));[m
+[32m+[m[32m                el.classList.add('selected');[m
+[32m+[m[32m                learningConfig.marks = val;[m
+[32m+[m[32m                updateSummaryAndReadiness();[m
+[32m+[m[32m                saveSetupState();[m
+[32m+[m[32m            }[m
+         });[m
+     });[m
+ [m
+     // Mode selection (Learn Simply vs Exam Answer)[m
+     document.querySelectorAll('[data-mode]').forEach(el => {[m
+         el.addEventListener('click', () => {[m
+[31m-            document.querySelectorAll('[data-mode]').forEach(m => m.classList.remove('selected'));[m
+[31m-            el.classList.add('selected');[m
+[31m-            learningConfig.mode = el.getAttribute('data-mode');[m
+[31m-            updateSummaryAndReadiness();[m
+[31m-            saveSetupState();[m
+[32m+[m[32m            const val = el.getAttribute('data-mode');[m
+[32m+[m[32m            if (VALID_MODES.includes(val)) {[m
+[32m+[m[32m                document.querySelectorAll('[data-mode]').forEach(m => m.classList.remove('selected'));[m
+[32m+[m[32m                el.classList.add('selected');[m
+[32m+[m[32m                learningConfig.mode = val;[m
+[32m+[m[32m                updateSummaryAndReadiness();[m
+[32m+[m[32m                saveSetupState();[m
+[32m+[m[32m            }[m
+         });[m
+     });[m
+ }[m
+ [m
+ /**[m
+[31m- * Preloads the primary demo flow required by SIH & Keshav:[m
+[31m- * DBMS → Unit 3 → Normalization → Intermediate → English → 5 Marks → Exam Answer[m
+[32m+[m[32m * Preloads the primary demo flow using real backend data:[m
+[32m+[m[32m * DBMS (course_id: 1) -> Unit 3 (unit_id: 1) -> Normalization (topic_id: 1)[m
+  */[m
+[31m-function loadDemoFlow() {[m
+[31m-    learningConfig.courseId = "dbms";[m
+[31m-    learningConfig.unitId = "u3";[m
+[31m-    learningConfig.topicId = "t_norm";[m
+[32m+[m[32masync function loadDemoFlow() {[m
+[32m+[m[32m    if (!availableCourses || availableCourses.length === 0) {[m
+[32m+[m[32m        await loadStudentCourses();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const courseSelect = document.getElementById('student-course-select');[m
+[32m+[m[32m    if (!courseSelect) return;[m
+[32m+[m
+[32m+[m[32m    // Locate DBMS course (ID 1)[m
+[32m+[m[32m    const dbmsCourse = availableCourses.find(c => c.course_id === 1 || c.course_name.toUpperCase().includes('DBMS')) || availableCourses[0];[m
+[32m+[m[32m    if (!dbmsCourse) {[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('No courses available in database.', 'warning');[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    courseSelect.value = String(dbmsCourse.course_id);[m
+[32m+[m[32m    await onCourseChange(dbmsCourse.course_id);[m
+[32m+[m
+[32m+[m[32m    const unitSelect = document.getElementById('student-unit-select');[m
+[32m+[m[32m    if (unitSelect && currentCourseHierarchy && currentCourseHierarchy.units && currentCourseHierarchy.units.length > 0) {[m
+[32m+[m[32m        const unit = currentCourseHierarchy.units.find(u => u.unit_id === 1 || u.unit_number === 3) || currentCourseHierarchy.units[0];[m
+[32m+[m[32m        unitSelect.value = String(unit.unit_id);[m
+[32m+[m[32m        onUnitChange(unit.unit_id);[m
+[32m+[m
+[32m+[m[32m        const topicSelect = document.getElementById('student-topic-select');[m
+[32m+[m[32m        if (topicSelect && unit.topics && unit.topics.length > 0) {[m
+[32m+[m[32m            const topic = unit.topics.find(t => t.topic_id === 1 || t.topic_name.toLowerCase().includes('normalization')) || unit.topics[0];[m
+[32m+[m[32m            topicSelect.value = String(topic.topic_id);[m
+[32m+[m[32m            onTopicChange(topic.topic_id);[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+     learningConfig.level = "intermediate";[m
+     learningConfig.language = "english";[m
+[31m-    learningConfig.marks = "5";[m
+[32m+[m[32m    learningConfig.marks = 5;[m
+     learningConfig.mode = "exam_answer";[m
+ [m
+[31m-    syncStateToUI();[m
+[32m+[m[32m    syncPillsToUI();[m
+     saveSetupState();[m
+ [m
+     if (typeof showToast === 'function') {[m
+[36m@@ -336,42 +407,21 @@[m [mfunction loadDemoFlow() {[m
+ }[m
+ [m
+ /**[m
+[31m- * Synchronizes JavaScript state into the HTML select elements and active CSS classes[m
+[32m+[m[32m * Synchronizes Level, Language, Marks, and Mode pill states to DOM[m
+  */[m
+[31m-function syncStateToUI() {[m
+[31m-    const courseSelect = document.getElementById('student-course-select');[m
+[31m-    if (courseSelect) {[m
+[31m-        courseSelect.value = learningConfig.courseId;[m
+[31m-        onCourseChange(learningConfig.courseId);[m
+[31m-    }[m
+[31m-[m
+[31m-    const unitSelect = document.getElementById('student-unit-select');[m
+[31m-    if (unitSelect && learningConfig.unitId) {[m
+[31m-        unitSelect.value = learningConfig.unitId;[m
+[31m-        onUnitChange(learningConfig.unitId);[m
+[31m-    }[m
+[31m-[m
+[31m-    const topicSelect = document.getElementById('student-topic-select');[m
+[31m-    if (topicSelect && learningConfig.topicId) {[m
+[31m-        topicSelect.value = learningConfig.topicId;[m
+[31m-    }[m
+[31m-[m
+[31m-    // Sync Level[m
+[32m+[m[32mfunction syncPillsToUI() {[m
+     document.querySelectorAll('[data-level]').forEach(el => {[m
+         el.classList.toggle('selected', el.getAttribute('data-level') === learningConfig.level);[m
+     });[m
+ [m
+[31m-    // Sync Language[m
+     document.querySelectorAll('[data-lang]').forEach(el => {[m
+         el.classList.toggle('selected', el.getAttribute('data-lang') === learningConfig.language);[m
+     });[m
+ [m
+[31m-    // Sync Marks[m
+     document.querySelectorAll('[data-marks]').forEach(el => {[m
+[31m-        el.classList.toggle('selected', el.getAttribute('data-marks') === learningConfig.marks);[m
+[32m+[m[32m        el.classList.toggle('selected', parseInt(el.getAttribute('data-marks'), 10) === learningConfig.marks);[m
+     });[m
+ [m
+[31m-    // Sync Mode[m
+     document.querySelectorAll('[data-mode]').forEach(el => {[m
+         el.classList.toggle('selected', el.getAttribute('data-mode') === learningConfig.mode);[m
+     });[m
+[36m@@ -379,6 +429,21 @@[m [mfunction syncStateToUI() {[m
+     updateSummaryAndReadiness();[m
+ }[m
+ [m
+[32m+[m[32m/**[m
+[32m+[m[32m * Validates that all 7 required parameters are selected and conform to backend contracts[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction isConfigurationValid() {[m
+[32m+[m[32m    const hasCourse = Number.isInteger(learningConfig.courseId) && learningConfig.courseId > 0;[m
+[32m+[m[32m    const hasUnit = Number.isInteger(learningConfig.unitId) && learningConfig.unitId > 0;[m
+[32m+[m[32m    const hasTopic = Number.isInteger(learningConfig.topicId) && learningConfig.topicId > 0;[m
+[32m+[m[32m    const hasLevel = Boolean(learningConfig.level && VALID_LEVELS.includes(learningConfig.level));[m
+[32m+[m[32m    const hasLanguage = Boolean(learningConfig.language && VALID_LANGUAGES.includes(learningConfig.language));[m
+[32m+[m[32m    const hasMarks = Boolean(learningConfig.marks && VALID_MARKS.includes(learningConfig.marks));[m
+[32m+[m[32m    const hasMode = Boolean(learningConfig.mode && VALID_MODES.includes(learningConfig.mode));[m
+[32m+[m
+[32m+[m[32m    return Boolean(hasCourse && hasUnit && hasTopic && hasLevel && hasLanguage && hasMarks && hasMode);[m
+[32m+[m[32m}[m
+[32m+[m
+ /**[m
+  * Updates summary chips, displays validation state, and readiness to generate[m
+  */[m
+[36m@@ -391,22 +456,46 @@[m [mfunction updateSummaryAndReadiness() {[m
+ [m
+     if (!summaryCard) return;[m
+ [m
+[31m-    const hasCourse = Boolean(learningConfig.courseId && COURSE_SYLLABUS[learningConfig.courseId]);[m
+[31m-    const courseObj = hasCourse ? COURSE_SYLLABUS[learningConfig.courseId] : null;[m
+[31m-    const unitObj = hasCourse && learningConfig.unitId ? courseObj.units.find(u => u.id === learningConfig.unitId) : null;[m
+[31m-    const topicObj = unitObj && learningConfig.topicId ? unitObj.topics.find(t => t.id === learningConfig.topicId) : null;[m
+[32m+[m[32m    let courseName = "—";[m
+[32m+[m[32m    let unitName = "—";[m
+[32m+[m[32m    let topicName = "Not selected";[m
+ [m
+[31m-    const isComplete = Boolean(hasCourse && unitObj && topicObj && learningConfig.level && learningConfig.language && learningConfig.marks && learningConfig.mode);[m
+[32m+[m[32m    if (availableCourses.length > 0 && learningConfig.courseId !== null) {[m
+[32m+[m[32m        const c = availableCourses.find(c => c.course_id === learningConfig.courseId);[m
+[32m+[m[32m        if (c) courseName = c.course_name;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (currentCourseHierarchy && currentCourseHierarchy.units && learningConfig.unitId !== null) {[m
+[32m+[m[32m        const u = currentCourseHierarchy.units.find(u => u.unit_id === learningConfig.unitId);[m
+[32m+[m[32m        if (u) unitName = u.unit_name ? u.unit_name.split(':')[0] : `Unit ${u.unit_number}`;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (currentCourseHierarchy && currentCourseHierarchy.units && learningConfig.unitId !== null && learningConfig.topicId !== null) {[m
+[32m+[m[32m        const u = currentCourseHierarchy.units.find(u => u.unit_id === learningConfig.unitId);[m
+[32m+[m[32m        if (u && u.topics) {[m
+[32m+[m[32m            const t = u.topics.find(t => t.topic_id === learningConfig.topicId);[m
+[32m+[m[32m            if (t) topicName = t.topic_name;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const hasCourse = Number.isInteger(learningConfig.courseId) && learningConfig.courseId > 0;[m
+[32m+[m[32m    const hasUnit = Number.isInteger(learningConfig.unitId) && learningConfig.unitId > 0;[m
+[32m+[m[32m    const hasTopic = Number.isInteger(learningConfig.topicId) && learningConfig.topicId > 0;[m
+[32m+[m[32m    const hasLevel = Boolean(learningConfig.level && VALID_LEVELS.includes(learningConfig.level));[m
+[32m+[m[32m    const hasLanguage = Boolean(learningConfig.language && VALID_LANGUAGES.includes(learningConfig.language));[m
+[32m+[m[32m    const hasMarks = Boolean(learningConfig.marks && VALID_MARKS.includes(learningConfig.marks));[m
+[32m+[m[32m    const hasMode = Boolean(learningConfig.mode && VALID_MODES.includes(learningConfig.mode));[m
+[32m+[m
+[32m+[m[32m    const isComplete = Boolean(hasCourse && hasUnit && hasTopic && hasLevel && hasLanguage && hasMarks && hasMode);[m
+ [m
+     if (summaryChips) {[m
+[32m+[m[32m        const escape = (typeof escapeHTML === 'function') ? escapeHTML : (s => s);[m
+         summaryChips.innerHTML = `[m
+[31m-            <span class="summary-chip"><strong>Course:</strong> ${courseObj ? courseObj.shortName : "—"}</span>[m
+[31m-            <span class="summary-chip"><strong>Unit:</strong> ${unitObj ? unitObj.name.split(':')[0] : "—"}</span>[m
+[31m-            <span class="summary-chip"><strong>Topic:</strong> ${topicObj ? topicObj.name : "Not selected"}</span>[m
+[31m-            <span class="summary-chip"><strong>Level:</strong> ${capitalize(learningConfig.level)}</span>[m
+[31m-            <span class="summary-chip"><strong>Language:</strong> ${learningConfig.language === 'english' ? 'English (EN)' : 'Hindi (हिन्दी)'}</span>[m
+[31m-            <span class="summary-chip"><strong>Marks:</strong> ${learningConfig.marks} Marks</span>[m
+[31m-            <span class="summary-chip"><strong>Mode:</strong> ${learningConfig.mode === 'exam_answer' ? 'Exam Answer' : 'Learn Simply'}</span>[m
+[32m+[m[32m            <span class="summary-chip"><strong>Course:</strong> ${escape(courseName)}</span>[m
+[32m+[m[32m            <span class="summary-chip"><strong>Unit:</strong> ${escape(unitName)}</span>[m
+[32m+[m[32m            <span class="summary-chip"><strong>Topic:</strong> ${escape(topicName)}</span>[m
+[32m+[m[32m            <span class="summary-chip"><strong>Level:</strong> ${hasLevel ? capitalize(learningConfig.level) : "Not selected"}</span>[m
+[32m+[m[32m            <span class="summary-chip"><strong>Language:</strong> ${hasLanguage ? (learningConfig.language === 'english' ? 'English (EN)' : 'Hindi (हिन्दी)') : "Not selected"}</span>[m
+[32m+[m[32m            <span class="summary-chip"><strong>Marks:</strong> ${hasMarks ? `${learningConfig.marks} Marks` : "Not selected"}</span>[m
+[32m+[m[32m            <span class="summary-chip"><strong>Mode:</strong> ${hasMode ? (learningConfig.mode === 'exam_answer' ? 'Exam Answer' : 'Learn Simply') : "Not selected"}</span>[m
+         `;[m
+     }[m
+ [m
+[36m@@ -424,10 +513,18 @@[m [mfunction updateSummaryAndReadiness() {[m
+             incompleteAlert.style.display = 'block';[m
+             if (!hasCourse) {[m
+                 incompleteAlert.innerText = "Please select a Course to begin.";[m
+[31m-            } else if (!unitObj) {[m
+[32m+[m[32m            } else if (!hasUnit) {[m
+                 incompleteAlert.innerText = "Please select a Unit from the syllabus.";[m
+[31m-            } else if (!topicObj) {[m
+[32m+[m[32m            } else if (!hasTopic) {[m
+                 incompleteAlert.innerText = "Please select a Topic to complete setup.";[m
+[32m+[m[32m            } else if (!hasLevel) {[m
+[32m+[m[32m                incompleteAlert.innerText = "Please select a Learning Level (Basic, Intermediate, or Advanced).";[m
+[32m+[m[32m            } else if (!hasLanguage) {[m
+[32m+[m[32m                incompleteAlert.innerText = "Please select a Preferred Language (English or Hindi).";[m
+[32m+[m[32m            } else if (!hasMarks) {[m
+[32m+[m[32m                incompleteAlert.innerText = "Please select Target Marks (2, 5, or 10 Marks).";[m
+[32m+[m[32m            } else if (!hasMode) {[m
+[32m+[m[32m                incompleteAlert.innerText = "Please select a Learning Mode (Learn Simply or Exam Answer).";[m
+             }[m
+         }[m
+         if (generateBtn) {[m
+[36m@@ -436,49 +533,219 @@[m [mfunction updateSummaryAndReadiness() {[m
+             generateBtn.classList.add('btn-secondary');[m
+         }[m
+     }[m
+[32m+[m
+[32m+[m[32m    const mcqBtn = document.getElementById('btn-topic-assessment');[m
+[32m+[m[32m    if (mcqBtn) {[m
+[32m+[m[32m        mcqBtn.disabled = !hasTopic;[m
+[32m+[m[32m    }[m
+ }[m
+ [m
+ /**[m
+[31m- * Handles the "Ready to Generate Answer" CTA[m
+[31m- * Simulates content readiness check and shows generation pipeline preview[m
+[32m+[m[32m * Connects to POST /api/answers/generate to request grounded answer[m
+[32m+[m[32m * Implements 5 legitimate UI states:[m
+[32m+[m[32m * 1. Ready to generate[m
+[32m+[m[32m * 2. Generating[m
+[32m+[m[32m * 3. Successfully generated (if real AI generated)[m
+[32m+[m[32m * 4. Generation unavailable/pending (if awaiting ai.generator)[m
+[32m+[m[32m * 5. API error[m
+  */[m
+[31m-function prepareGeneration() {[m
+[31m-    const hasCourse = Boolean(learningConfig.courseId && COURSE_SYLLABUS[learningConfig.courseId]);[m
+[31m-    const courseObj = hasCourse ? COURSE_SYLLABUS[learningConfig.courseId] : null;[m
+[31m-    const unitObj = hasCourse && learningConfig.unitId ? courseObj.units.find(u => u.id === learningConfig.unitId) : null;[m
+[31m-    const topicObj = unitObj && learningConfig.topicId ? unitObj.topics.find(t => t.id === learningConfig.topicId) : null;[m
+[31m-[m
+[31m-    if (!topicObj) {[m
+[32m+[m[32masync function generateAnswer() {[m
+[32m+[m[32m    if (!isConfigurationValid()) {[m
+         if (typeof showToast === 'function') {[m
+[31m-            showToast("Please complete the setup: Course, Unit, and Topic are required.", "error");[m
+[32m+[m[32m            showToast("Please select all required learning parameters (Course, Unit, Topic, Level, Language, Marks, and Mode).", "error");[m
+         }[m
+         return;[m
+     }[m
+ [m
+[32m+[m[32m    const generateBtn = document.getElementById('btn-generate-prep');[m
+     const loadingBox = document.getElementById('generation-loading');[m
+[31m-    const pipelinePreview = document.getElementById('generation-pipeline-preview');[m
+[31m-    const setupCard = document.getElementById('setup-main-card');[m
+[32m+[m[32m    const resultContainer = document.getElementById('generation-result-container');[m
+[32m+[m[32m    const errorBox = document.getElementById('generation-error-box');[m
+[32m+[m[32m    const errorMessage = document.getElementById('generation-error-message');[m
+ [m
+[32m+[m[32m    // UI State: Generating[m
+[32m+[m[32m    if (generateBtn) {[m
+[32m+[m[32m        generateBtn.disabled = true;[m
+[32m+[m[32m        generateBtn.innerText = "Generating Grounded Answer...";[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (errorBox) errorBox.style.display = 'none';[m
+[32m+[m[32m    if (resultContainer) resultContainer.style.display = 'none';[m
+     if (loadingBox) {[m
+         loadingBox.classList.add('active');[m
+[31m-        if (pipelinePreview) pipelinePreview.style.display = 'none';[m
+[31m-[m
+[31m-        // Smooth scroll to loading section[m
+         loadingBox.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m    }[m
+ [m
+[31m-        setTimeout(() => {[m
+[31m-            loadingBox.classList.remove('active');[m
+[31m-            if (pipelinePreview) {[m
+[31m-                pipelinePreview.style.display = 'block';[m
+[31m-                pipelinePreview.scrollIntoView({ behavior: 'smooth', block: 'start' });[m
+[32m+[m[32m    // Exact required payload (marks as integer, course_id, topic_id, level, language, mode)[m
+[32m+[m[32m    const payload = {[m
+[32m+[m[32m        course_id: parseInt(learningConfig.courseId, 10),[m
+[32m+[m[32m        topic_id: parseInt(learningConfig.topicId, 10),[m
+[32m+[m[32m        level: String(learningConfig.level),[m
+[32m+[m[32m        language: String(learningConfig.language),[m
+[32m+[m[32m        marks: parseInt(learningConfig.marks, 10),[m
+[32m+[m[32m        mode: String(learningConfig.mode)[m
+[32m+[m[32m    };[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${STUDENT_API_BASE}/answers/generate`, {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            headers: {[m
+[32m+[m[32m                'Content-Type': 'application/json'[m
+[32m+[m[32m            },[m
+[32m+[m[32m            body: JSON.stringify(payload)[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m
+[32m+[m[32m        if (loadingBox) loadingBox.classList.remove('active');[m
+[32m+[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            // UI State: API error[m
+[32m+[m[32m            const errDetail = (data && data.error) ? data.error : `HTTP ${res.status}: Failed to generate answer`;[m
+[32m+[m[32m            if (errorBox) {[m
+[32m+[m[32m                if (errorMessage) errorMessage.innerText = errDetail;[m
+[32m+[m[32m                errorBox.style.display = 'block';[m
+[32m+[m[32m                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m            }[m
+[32m+[m[32m            if (generateBtn) {[m
+[32m+[m[32m                generateBtn.disabled = false;[m
+[32m+[m[32m                generateBtn.innerText = "Retry Generation 🚀";[m
+             }[m
+             if (typeof showToast === 'function') {[m
+[31m-                showToast(`Setup validated for ${topicObj.name}! Ready for AI Generation.`, "success");[m
+[32m+[m[32m                showToast(errDetail, "error");[m
+[32m+[m[32m            }[m
+[32m+[m[32m            return data;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Response succeeded (200 OK)[m
+[32m+[m[32m        if (generateBtn) {[m
+[32m+[m[32m            generateBtn.disabled = false;[m
+[32m+[m[32m            generateBtn.innerText = "Regenerate Answer 🚀";[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Determine whether real AI generated it or if it is development mock awaiting ai.generator[m
+[32m+[m[32m        const answerText = data.answer_text || data.answer || "";[m
+[32m+[m[32m        const isMockAwaiting = typeof answerText === 'string' && answerText.includes('[MOCK DATA');[m
+[32m+[m
+[32m+[m[32m        // Populate Result Fields[m
+[32m+[m[32m        renderAnswerResult(data, isMockAwaiting);[m
+[32m+[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            if (isMockAwaiting) {[m
+[32m+[m[32m                showToast("Response received from backend (AI module pending).", "info");[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                showToast("Answer generated successfully!", "success");[m
+             }[m
+[31m-        }, 1200);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return data;[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Answer generation network or execution error:', err);[m
+[32m+[m[32m        if (loadingBox) loadingBox.classList.remove('active');[m
+[32m+[m[32m        if (errorBox) {[m
+[32m+[m[32m            if (errorMessage) errorMessage.innerText = err.message || "Network connection error while reaching answers API.";[m
+[32m+[m[32m            errorBox.style.display = 'block';[m
+[32m+[m[32m            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (generateBtn) {[m
+[32m+[m[32m            generateBtn.disabled = false;[m
+[32m+[m[32m            generateBtn.innerText = "Retry Generation 🚀";[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast("Network error contacting answer generation service.", "error");[m
+[32m+[m[32m        }[m
+     }[m
+ }[m
+ [m
+[32m+[m[32m/**[m
+[32m+[m[32m * Backward compatibility alias for prepareGeneration[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction prepareGeneration() {[m
+[32m+[m[32m    return generateAnswer();[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Renders the returned answer data into the result container[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction renderAnswerResult(data, isMockAwaiting) {[m
+[32m+[m[32m    const resultContainer = document.getElementById('generation-result-container');[m
+[32m+[m[32m    const resultHeading = document.getElementById('result-heading');[m
+[32m+[m[32m    const resultBadges = document.getElementById('result-badges');[m
+[32m+[m[32m    const pendingBanner = document.getElementById('ai-pending-banner');[m
+[32m+[m[32m    const answerTextEl = document.getElementById('result-answer-text');[m
+[32m+[m[32m    const sourceRefEl = document.getElementById('result-source-reference');[m
+[32m+[m[32m    const sourceVerifiedEl = document.getElementById('result-source-verified');[m
+[32m+[m[32m    const keywordsVerifiedEl = document.getElementById('result-keywords-verified');[m
+[32m+[m[32m    const approvalStatusEl = document.getElementById('result-approval-status');[m
+[32m+[m[32m    const answerIdEl = document.getElementById('result-answer-id');[m
+[32m+[m[32m    const paramsEl = document.getElementById('result-parameters');[m
+[32m+[m[32m    const footerNoteEl = document.getElementById('result-footer-note');[m
+[32m+[m
+[32m+[m[32m    if (!resultContainer) return;[m
+[32m+[m
+[32m+[m[32m    const escape = (typeof escapeHTML === 'function') ? escapeHTML : (s => String(s ?? ''));[m
+[32m+[m
+[32m+[m[32m    // Check Legitimate UI States:[m
+[32m+[m[32m    // If isMockAwaiting: UI State = "Generation unavailable/pending"[m
+[32m+[m[32m    // If !isMockAwaiting: UI State = "Successfully generated"[m
+[32m+[m[32m    if (isMockAwaiting) {[m
+[32m+[m[32m        if (resultHeading) resultHeading.innerText = "Structured Answer (AI Pipeline Pending)";[m
+[32m+[m[32m        if (pendingBanner) pendingBanner.style.display = 'block';[m
+[32m+[m[32m        if (resultBadges) {[m
+[32m+[m[32m            resultBadges.innerHTML = `[m
+[32m+[m[32m                <span class="badge badge-warning">AI Pipeline Pending</span>[m
+[32m+[m[32m                <span class="badge ${data.approval_status === 'approved' ? 'badge-success' : 'badge-warning'}">${capitalize(data.approval_status)}</span>[m
+[32m+[m[32m            `;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (footerNoteEl) footerNoteEl.innerText = "Backend Development Response • Awaiting ai.generator implementation";[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m        if (resultHeading) resultHeading.innerText = "✨ Grounded Answer (AI Generated)";[m
+[32m+[m[32m        if (pendingBanner) pendingBanner.style.display = 'none';[m
+[32m+[m[32m        if (resultBadges) {[m
+[32m+[m[32m            resultBadges.innerHTML = `[m
+[32m+[m[32m                <span class="badge badge-success">AI Generated</span>[m
+[32m+[m[32m                <span class="badge ${data.approval_status === 'approved' ? 'badge-success' : 'badge-warning'}">${capitalize(data.approval_status)}</span>[m
+[32m+[m[32m            `;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (footerNoteEl) footerNoteEl.innerText = "Syllabus-aligned answer grounded in teacher-uploaded course materials.";[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // Populate returned fields[m
+[32m+[m[32m    if (answerTextEl) {[m
+[32m+[m[32m        answerTextEl.textContent = data.answer_text || data.answer || "No answer content returned.";[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (sourceRefEl) {[m
+[32m+[m[32m        sourceRefEl.textContent = data.source_reference || "None";[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (sourceVerifiedEl) {[m
+[32m+[m[32m        sourceVerifiedEl.innerHTML = data.source_verified[m[41m [m
+[32m+[m[32m            ? '<span class="badge badge-success">✓ Grounded</span>'[m[41m [m
+[32m+[m[32m            : '<span class="badge badge-warning">Unverified</span>';[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (keywordsVerifiedEl) {[m
+[32m+[m[32m        keywordsVerifiedEl.innerHTML = data.keywords_verified[m[41m [m
+[32m+[m[32m            ? '<span class="badge badge-success">✓ Grounded</span>'[m[41m [m
+[32m+[m[32m            : '<span class="badge badge-warning">Unchecked</span>';[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (approvalStatusEl) {[m
+[32m+[m[32m        const isApproved = data.approval_status === 'approved';[m
+[32m+[m[32m        approvalStatusEl.innerHTML = `[m
+[32m+[m[32m            <span class="badge ${isApproved ? 'badge-success' : 'badge-warning'}">[m
+[32m+[m[32m                ${capitalize(data.approval_status || 'pending')}[m
+[32m+[m[32m            </span>[m
+[32m+[m[32m        `;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (answerIdEl) {[m
+[32m+[m[32m        answerIdEl.textContent = `#${data.answer_id ?? '—'} (Topic ID: ${data.topic_id ?? '—'})`;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (paramsEl) {[m
+[32m+[m[32m        paramsEl.textContent = `${data.marks ?? '—'} Marks • ${capitalize(data.level)} • ${capitalize(data.language)} • ${data.mode}`;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    resultContainer.style.display = 'block';[m
+[32m+[m[32m    resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });[m
+[32m+[m[32m}[m
+[32m+[m
+ /**[m
+  * Saves current setup to browser storage[m
+  */[m
+[36m@@ -490,23 +757,565 @@[m [mfunction saveSetupState() {[m
+     }[m
+ }[m
+ [m
+[32m+[m[32m/**[m
+[32m+[m[32m * Export current learning configuration object[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction getLearningConfig() {[m
+[32m+[m[32m    return {[m
+[32m+[m[32m        courseId: learningConfig.courseId,[m
+[32m+[m[32m        unitId: learningConfig.unitId,[m
+[32m+[m[32m        topicId: learningConfig.topicId,[m
+[32m+[m[32m        level: learningConfig.level,[m
+[32m+[m[32m        language: learningConfig.language,[m
+[32m+[m[32m        marks: learningConfig.marks,[m
+[32m+[m[32m        mode: learningConfig.mode[m
+[32m+[m[32m    };[m
+[32m+[m[32m}[m
+[32m+[m
+ function capitalize(str) {[m
+     if (!str) return '';[m
+     return str.charAt(0).toUpperCase() + str.slice(1);[m
+ }[m
+ [m
+[32m+[m[32m/* =========================================================[m
+[32m+[m[32m   MCQ Assessment, Weak Topic & Revision Flow[m
+[32m+[m[32m   ========================================================= */[m
+[32m+[m
+[32m+[m[32mlet currentAssessmentId = null;[m
+[32m+[m[32mlet currentQuestions = [];[m
+[32m+[m[32mlet currentAssessmentTopicId = null;[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Initiates MCQ assessment generation for the currently selected topic[m
+[32m+[m[32m */[m
+[32m+[m[32masync function startMcqAssessment(topicIdOverride) {[m
+[32m+[m[32m    const topicId = topicIdOverride ? parseInt(topicIdOverride, 10) : (learningConfig.topicId ? parseInt(learningConfig.topicId, 10) : null);[m
+[32m+[m
+[32m+[m[32m    if (!topicId || isNaN(topicId)) {[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast("Please select a Topic to generate an assessment.", "warning");[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    currentAssessmentTopicId = topicId;[m
+[32m+[m[32m    currentAssessmentId = null;[m
+[32m+[m[32m    currentQuestions = [];[m
+[32m+[m
+[32m+[m[32m    const assessmentCard = document.getElementById('assessment-card');[m
+[32m+[m[32m    const loadingBox = document.getElementById('assessment-loading');[m
+[32m+[m[32m    const quizContainer = document.getElementById('assessment-quiz-container');[m
+[32m+[m[32m    const resultContainer = document.getElementById('assessment-result-container');[m
+[32m+[m[32m    const errorBox = document.getElementById('assessment-error-box');[m
+[32m+[m[32m    const badge = document.getElementById('assessment-badge');[m
+[32m+[m[32m    const unansweredAlert = document.getElementById('assessment-unanswered-alert');[m
+[32m+[m
+[32m+[m[32m    if (assessmentCard) assessmentCard.style.display = 'block';[m
+[32m+[m[32m    if (errorBox) errorBox.style.display = 'none';[m
+[32m+[m[32m    if (quizContainer) quizContainer.style.display = 'none';[m
+[32m+[m[32m    if (resultContainer) resultContainer.style.display = 'none';[m
+[32m+[m[32m    if (unansweredAlert) unansweredAlert.style.display = 'none';[m
+[32m+[m[32m    if (loadingBox) {[m
+[32m+[m[32m        loadingBox.style.display = 'block';[m
+[32m+[m[32m        loadingBox.classList.add('active');[m
+[32m+[m[32m        loadingBox.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (badge) badge.innerText = "Generating...";[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${STUDENT_API_BASE}/assessment/generate`, {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            headers: { 'Content-Type': 'application/json' },[m
+[32m+[m[32m            body: JSON.stringify({[m
+[32m+[m[32m                topic_id: topicId,[m
+[32m+[m[32m                num_questions: 3[m
+[32m+[m[32m            })[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m[32m        if (loadingBox) {[m
+[32m+[m[32m            loadingBox.style.display = 'none';[m
+[32m+[m[32m            loadingBox.classList.remove('active');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            const errMsg = (data && data.error) ? data.error : `HTTP ${res.status}: Failed to generate assessment`;[m
+[32m+[m[32m            if (errorBox) {[m
+[32m+[m[32m                const msgEl = document.getElementById('assessment-error-message');[m
+[32m+[m[32m                if (msgEl) msgEl.innerText = errMsg;[m
+[32m+[m[32m                errorBox.style.display = 'block';[m
+[32m+[m[32m                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m            }[m
+[32m+[m[32m            if (badge) badge.innerText = "Error";[m
+[32m+[m[32m            if (typeof showToast === 'function') {[m
+[32m+[m[32m                showToast(errMsg, "error");[m
+[32m+[m[32m            }[m
+[32m+[m[32m            return data;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        currentAssessmentId = data.assessment_id;[m
+[32m+[m[32m        currentQuestions = Array.isArray(data.questions) ? data.questions : [];[m
+[32m+[m
+[32m+[m[32m        if (currentQuestions.length === 0) {[m
+[32m+[m[32m            if (errorBox) {[m
+[32m+[m[32m                const msgEl = document.getElementById('assessment-error-message');[m
+[32m+[m[32m                if (msgEl) msgEl.innerText = "No questions returned for this topic.";[m
+[32m+[m[32m                errorBox.style.display = 'block';[m
+[32m+[m[32m            }[m
+[32m+[m[32m            if (badge) badge.innerText = "No Questions";[m
+[32m+[m[32m            return data;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        renderQuizQuestions(currentQuestions);[m
+[32m+[m
+[32m+[m[32m        if (quizContainer) quizContainer.style.display = 'block';[m
+[32m+[m[32m        if (badge) badge.innerText = `${currentQuestions.length} Questions`;[m
+[32m+[m[32m        if (assessmentCard) assessmentCard.scrollIntoView({ behavior: 'smooth', block: 'start' });[m
+[32m+[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast("Assessment questions ready. Select an answer for each question.", "success");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return data;[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Error generating assessment:', err);[m
+[32m+[m[32m        if (loadingBox) {[m
+[32m+[m[32m            loadingBox.style.display = 'none';[m
+[32m+[m[32m            loadingBox.classList.remove('active');[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (errorBox) {[m
+[32m+[m[32m            const msgEl = document.getElementById('assessment-error-message');[m
+[32m+[m[32m            if (msgEl) msgEl.innerText = err.message || "Network error contacting assessment API.";[m
+[32m+[m[32m            errorBox.style.display = 'block';[m
+[32m+[m[32m            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (badge) badge.innerText = "Network Error";[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast("Network error contacting assessment API.", "error");[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Renders the question list dynamically without exposing correct answers[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction renderQuizQuestions(questions) {[m
+[32m+[m[32m    const listEl = document.getElementById('assessment-questions-list');[m
+[32m+[m[32m    if (!listEl) return;[m
+[32m+[m
+[32m+[m[32m    listEl.innerHTML = '';[m
+[32m+[m[32m    const escape = (typeof escapeHTML === 'function') ? escapeHTML : (s => String(s ?? ''));[m
+[32m+[m
+[32m+[m[32m    questions.forEach((q, idx) => {[m
+[32m+[m[32m        const qCard = document.createElement('div');[m
+[32m+[m[32m        qCard.className = 'mcq-question-card';[m
+[32m+[m[32m        qCard.id = `mcq-q-${q.question_id}`;[m
+[32m+[m
+[32m+[m[32m        const qTitle = document.createElement('div');[m
+[32m+[m[32m        qTitle.className = 'mcq-question-text';[m
+[32m+[m[32m        qTitle.innerHTML = `<strong>Q${idx + 1}.</strong> ${escape(q.question_text)}`;[m
+[32m+[m[32m        qCard.appendChild(qTitle);[m
+[32m+[m
+[32m+[m[32m        const optionsGroup = document.createElement('div');[m
+[32m+[m[32m        optionsGroup.className = 'mcq-options-group';[m
+[32m+[m
+[32m+[m[32m        const options = Array.isArray(q.options) ? q.options : [];[m
+[32m+[m[32m        options.forEach(opt => {[m
+[32m+[m[32m            const optLabel = document.createElement('label');[m
+[32m+[m[32m            optLabel.className = 'mcq-option-label';[m
+[32m+[m
+[32m+[m[32m            const radio = document.createElement('input');[m
+[32m+[m[32m            radio.type = 'radio';[m
+[32m+[m[32m            radio.name = `question_${q.question_id}`;[m
+[32m+[m[32m            radio.value = opt;[m
+[32m+[m
+[32m+[m[32m            const span = document.createElement('span');[m
+[32m+[m[32m            span.textContent = opt;[m
+[32m+[m
+[32m+[m[32m            optLabel.appendChild(radio);[m
+[32m+[m[32m            optLabel.appendChild(span);[m
+[32m+[m
+[32m+[m[32m            radio.addEventListener('change', () => {[m
+[32m+[m[32m                optionsGroup.querySelectorAll('.mcq-option-label').forEach(l => {[m
+[32m+[m[32m                    l.style.borderColor = 'var(--border-color)';[m
+[32m+[m[32m                    l.style.backgroundColor = '#ffffff';[m
+[32m+[m[32m                });[m
+[32m+[m[32m                if (radio.checked) {[m
+[32m+[m[32m                    optLabel.style.borderColor = 'var(--primary-color)';[m
+[32m+[m[32m                    optLabel.style.backgroundColor = '#f0f9ff';[m
+[32m+[m[32m                }[m
+[32m+[m[32m            });[m
+[32m+[m
+[32m+[m[32m            optionsGroup.appendChild(optLabel);[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        qCard.appendChild(optionsGroup);[m
+[32m+[m[32m        listEl.appendChild(qCard);[m
+[32m+[m[32m    });[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Submits the student's selected MCQ answers to POST /api/assessment/submit[m
+[32m+[m[32m */[m
+[32m+[m[32masync function submitAssessment() {[m
+[32m+[m[32m    if (!currentAssessmentId) {[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast("Assessment session not found. Please regenerate assessment.", "error");[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const answers = {};[m
+[32m+[m[32m    let unansweredCount = 0;[m
+[32m+[m
+[32m+[m[32m    currentQuestions.forEach(q => {[m
+[32m+[m[32m        const selected = document.querySelector(`input[name="question_${q.question_id}"]:checked`);[m
+[32m+[m[32m        if (selected) {[m
+[32m+[m[32m            answers[String(q.question_id)] = selected.value;[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            unansweredCount++;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    const unansweredAlert = document.getElementById('assessment-unanswered-alert');[m
+[32m+[m
+[32m+[m[32m    if (unansweredCount > 0) {[m
+[32m+[m[32m        if (unansweredAlert) {[m
+[32m+[m[32m            unansweredAlert.style.display = 'block';[m
+[32m+[m[32m            unansweredAlert.innerText = `⚠️ Please select an answer for all questions (${unansweredCount} remaining) before submitting.`;[m
+[32m+[m[32m            unansweredAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast(`Please answer all ${currentQuestions.length} questions before submitting.`, "warning");[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m        if (unansweredAlert) unansweredAlert.style.display = 'none';[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const submitBtn = document.getElementById('btn-submit-mcq');[m
+[32m+[m[32m    const quizContainer = document.getElementById('assessment-quiz-container');[m
+[32m+[m[32m    const resultContainer = document.getElementById('assessment-result-container');[m
+[32m+[m[32m    const errorBox = document.getElementById('assessment-error-box');[m
+[32m+[m
+[32m+[m[32m    if (submitBtn) {[m
+[32m+[m[32m        submitBtn.disabled = true;[m
+[32m+[m[32m        submitBtn.innerText = "Submitting & Grading...";[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (errorBox) errorBox.style.display = 'none';[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${STUDENT_API_BASE}/assessment/submit`, {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            headers: { 'Content-Type': 'application/json' },[m
+[32m+[m[32m            body: JSON.stringify({[m
+[32m+[m[32m                assessment_id: parseInt(currentAssessmentId, 10),[m
+[32m+[m[32m                answers: answers[m
+[32m+[m[32m            })[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m
+[32m+[m[32m        if (submitBtn) {[m
+[32m+[m[32m            submitBtn.disabled = false;[m
+[32m+[m[32m            submitBtn.innerText = "Submit Assessment 📤";[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            const errMsg = (data && data.error) ? data.error : `HTTP ${res.status}: Failed to submit assessment`;[m
+[32m+[m[32m            if (errorBox) {[m
+[32m+[m[32m                const msgEl = document.getElementById('assessment-error-message');[m
+[32m+[m[32m                if (msgEl) msgEl.innerText = errMsg;[m
+[32m+[m[32m                errorBox.style.display = 'block';[m
+[32m+[m[32m                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m            }[m
+[32m+[m[32m            if (typeof showToast === 'function') {[m
+[32m+[m[32m                showToast(errMsg, "error");[m
+[32m+[m[32m            }[m
+[32m+[m[32m            return data;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (quizContainer) quizContainer.style.display = 'none';[m
+[32m+[m[32m        renderAssessmentResults(data);[m
+[32m+[m
+[32m+[m[32m        if (resultContainer) {[m
+[32m+[m[32m            resultContainer.style.display = 'block';[m
+[32m+[m[32m            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            if (data.is_weak) {[m
+[32m+[m[32m                showToast("Assessment complete: Weak topic flagged for revision.", "warning");[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                showToast(`Assessment complete: Scored ${data.score}/${data.total_questions}!`, "success");[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        await loadWeakTopics();[m
+[32m+[m
+[32m+[m[32m        return data;[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Error submitting assessment:', err);[m
+[32m+[m[32m        if (submitBtn) {[m
+[32m+[m[32m            submitBtn.disabled = false;[m
+[32m+[m[32m            submitBtn.innerText = "Submit Assessment 📤";[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (errorBox) {[m
+[32m+[m[32m            const msgEl = document.getElementById('assessment-error-message');[m
+[32m+[m[32m            if (msgEl) msgEl.innerText = err.message || "Network error submitting assessment.";[m
+[32m+[m[32m            errorBox.style.display = 'block';[m
+[32m+[m[32m            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast("Network error submitting assessment.", "error");[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Renders the assessment outcome: score, percentage, recommendation, weak topic status, and per-question breakdown[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction renderAssessmentResults(data) {[m
+[32m+[m[32m    const summaryBox = document.getElementById('assessment-score-summary');[m
+[32m+[m[32m    const reviewList = document.getElementById('assessment-review-list');[m
+[32m+[m[32m    const revisionWrapper = document.getElementById('revision-action-container');[m
+[32m+[m[32m    const badge = document.getElementById('assessment-badge');[m
+[32m+[m
+[32m+[m[32m    const escape = (typeof escapeHTML === 'function') ? escapeHTML : (s => String(s ?? ''));[m
+[32m+[m
+[32m+[m[32m    if (badge) {[m
+[32m+[m[32m        badge.innerText = `Score: ${data.score}/${data.total_questions} (${data.percentage}%)`;[m
+[32m+[m[32m        badge.className = data.is_weak ? 'badge badge-warning' : 'badge badge-success';[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (summaryBox) {[m
+[32m+[m[32m        summaryBox.innerHTML = `[m
+[32m+[m[32m            <div class="flex justify-between items-center mb-3" style="flex-wrap: wrap; gap: 0.5rem;">[m
+[32m+[m[32m                <div>[m
+[32m+[m[32m                    <h4 style="margin: 0 0 0.25rem 0;">Assessment Score: ${data.score} / ${data.total_questions} (${data.percentage}%)</h4>[m
+[32m+[m[32m                    <p class="text-secondary" style="margin: 0; font-size: 0.875rem;">[m
+[32m+[m[32m                        ${escape(data.recommendation || (data.is_weak ? 'Revision recommended' : 'Good mastery of topic'))}[m
+[32m+[m[32m                    </p>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m                <div>[m
+[32m+[m[32m                    ${data.is_weak[m[41m [m
+[32m+[m[32m                        ? '<span class="badge badge-danger">⚠️ Weak Topic Flagged</span>'[m[41m [m
+[32m+[m[32m                        : '<span class="badge badge-success">✓ Mastery Achieved</span>'}[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m            ${data.is_weak ? `[m
+[32m+[m[32m                <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-top: 0.75rem; font-size: 0.875rem; color: #92400e;">[m
+[32m+[m[32m                    <strong>Revision Recommended:</strong> Your score was below the 60% threshold. This topic has been logged to your Weak Topics list. Click "Revise Topic" below to review teacher-approved notes and solidify your understanding.[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m            ` : `[m
+[32m+[m[32m                <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-top: 0.75rem; font-size: 0.875rem; color: #166534;">[m
+[32m+[m[32m                    <strong>Excellent Performance!</strong> You have demonstrated a solid understanding of the concepts in this topic.[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m            `}[m
+[32m+[m[32m        `;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (reviewList && Array.isArray(data.results)) {[m
+[32m+[m[32m        reviewList.innerHTML = '';[m
+[32m+[m[32m        data.results.forEach((r, idx) => {[m
+[32m+[m[32m            const card = document.createElement('div');[m
+[32m+[m[32m            card.className = `mcq-review-card ${r.is_correct ? 'correct' : 'incorrect'}`;[m
+[32m+[m
+[32m+[m[32m            card.innerHTML = `[m
+[32m+[m[32m                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; gap: 0.5rem;">[m
+[32m+[m[32m                    <div style="font-weight: 600; font-size: 0.9375rem;">[m
+[32m+[m[32m                        Q${idx + 1}. ${escape(r.question_text)}[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                    <div>[m
+[32m+[m[32m                        ${r.is_correct[m[41m [m
+[32m+[m[32m                            ? '<span class="badge badge-success">Correct (+1)</span>'[m[41m [m
+[32m+[m[32m                            : '<span class="badge badge-danger">Incorrect (0)</span>'}[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m                <div style="font-size: 0.875rem; margin-bottom: 0.35rem;">[m
+[32m+[m[32m                    <strong>Your Answer:</strong> <span style="color: ${r.is_correct ? 'var(--success-color)' : 'var(--danger-color)'}; font-weight: 500;">${escape(r.selected_option || 'None')}</span>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m                ${!r.is_correct ? `[m
+[32m+[m[32m                    <div style="font-size: 0.875rem; color: var(--success-color);">[m
+[32m+[m[32m                        <strong>Correct Answer:</strong> <span style="font-weight: 500;">${escape(r.correct_answer)}</span>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                ` : ''}[m
+[32m+[m[32m            `;[m
+[32m+[m
+[32m+[m[32m            reviewList.appendChild(card);[m
+[32m+[m[32m        });[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (revisionWrapper) {[m
+[32m+[m[32m        if (data.is_weak) {[m
+[32m+[m[32m            revisionWrapper.innerHTML = `[m
+[32m+[m[32m                <button type="button" class="btn btn-warning" id="btn-revise-topic" onclick="reviseTopic(${data.topic_id})" style="font-weight: 600;">[m
+[32m+[m[32m                    Revise Topic ↺[m
+[32m+[m[32m                </button>[m
+[32m+[m[32m            `;[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            revisionWrapper.innerHTML = '';[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Closes assessment panel and returns to learning workspace[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction cancelAssessment() {[m
+[32m+[m[32m    const assessmentCard = document.getElementById('assessment-card');[m
+[32m+[m[32m    if (assessmentCard) assessmentCard.style.display = 'none';[m
+[32m+[m[32m    window.scrollTo({ top: 0, behavior: 'smooth' });[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Handles the "Revise Topic" action:[m
+[32m+[m[32m * Returns the student to the learning flow with the weak topic selected[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction reviseTopic(topicId, courseId, unitId) {[m
+[32m+[m[32m    const tId = parseInt(topicId, 10);[m
+[32m+[m[32m    if (isNaN(tId)) return;[m
+[32m+[m
+[32m+[m[32m    // Check if on dashboard.html: redirect to learning.html with topic selected[m
+[32m+[m[32m    if (document.getElementById('student-dashboard-root')) {[m
+[32m+[m[32m        const cId = courseId || 1;[m
+[32m+[m[32m        window.location.href = `learning.html?course_id=${cId}&topic_id=${tId}&mode=learn_simply&level=basic`;[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // Currently on learning.html: update state and navigate to setup[m
+[32m+[m[32m    learningConfig.topicId = tId;[m
+[32m+[m[32m    learningConfig.mode = "learn_simply"; // Default to Learn Simply for revision[m
+[32m+[m
+[32m+[m[32m    const topicSelect = document.getElementById('student-topic-select');[m
+[32m+[m[32m    if (topicSelect) {[m
+[32m+[m[32m        topicSelect.value = String(tId);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    syncPillsToUI();[m
+[32m+[m[32m    updateSummaryAndReadiness();[m
+[32m+[m
+[32m+[m[32m    const assessmentCard = document.getElementById('assessment-card');[m
+[32m+[m[32m    if (assessmentCard) assessmentCard.style.display = 'none';[m
+[32m+[m
+[32m+[m[32m    const setupCard = document.getElementById('setup-main-card');[m
+[32m+[m[32m    if (setupCard) {[m
+[32m+[m[32m        setupCard.scrollIntoView({ behavior: 'smooth', block: 'start' });[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m        window.scrollTo({ top: 0, behavior: 'smooth' });[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (typeof showToast === 'function') {[m
+[32m+[m[32m        showToast("Revision Mode: Topic selected for review. Review grounded concepts.", "info");[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Fetches and displays weak topics from GET /api/assessment/weak-topics[m
+[32m+[m[32m */[m
+[32m+[m[32masync function loadWeakTopics() {[m
+[32m+[m[32m    const dashboardContainer = document.getElementById('dashboard-weak-topics-container');[m
+[32m+[m[32m    const badge = document.getElementById('weak-topics-count');[m
+[32m+[m
+[32m+[m[32m    if (!dashboardContainer && !badge) return;[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${STUDENT_API_BASE}/assessment/weak-topics`);[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            throw new Error(`HTTP ${res.status}`);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        const weakTopics = await res.json();[m
+[32m+[m[32m        const list = Array.isArray(weakTopics) ? weakTopics : [];[m
+[32m+[m
+[32m+[m[32m        if (badge) {[m
+[32m+[m[32m            badge.innerText = `${list.length} Topics`;[m
+[32m+[m[32m            badge.className = list.length > 0 ? 'badge badge-warning' : 'badge badge-success';[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (dashboardContainer) {[m
+[32m+[m[32m            if (list.length === 0) {[m
+[32m+[m[32m                dashboardContainer.innerHTML = `[m
+[32m+[m[32m                    <div class="text-secondary" style="padding: 1.5rem 0; text-align: center; font-size: 0.875rem;">[m
+[32m+[m[32m                        🎉 No weak topics flagged! Keep taking assessments to test your understanding.[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                `;[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            const escape = (typeof escapeHTML === 'function') ? escapeHTML : (s => String(s ?? ''));[m
+[32m+[m[32m            dashboardContainer.innerHTML = '';[m
+[32m+[m
+[32m+[m[32m            list.forEach(wt => {[m
+[32m+[m[32m                const item = document.createElement('div');[m
+[32m+[m[32m                item.className = 'weak-topic-item';[m
+[32m+[m
+[32m+[m[32m                const pct = wt.total > 0 ? Math.round((wt.score / wt.total) * 100) : 0;[m
+[32m+[m
+[32m+[m[32m                item.innerHTML = `[m
+[32m+[m[32m                    <div>[m
+[32m+[m[32m                        <div style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">[m
+[32m+[m[32m                            ${escape(wt.topic_name)}[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                        <div class="text-secondary" style="font-size: 0.8125rem; margin-top: 0.2rem;">[m
+[32m+[m[32m                            Course ID: ${wt.course_id} • Unit ${wt.unit_number}: ${escape(wt.unit_name)}[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                        <div style="font-size: 0.75rem; margin-top: 0.35rem; color: var(--text-secondary);">[m
+[32m+[m[32m                            Recent Assessment Score: <strong>${wt.score} / ${wt.total} (${pct}%)</strong>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                    <div class="flex items-center gap-2">[m
+[32m+[m[32m                        <span class="badge badge-danger">Needs Revision</span>[m
+[32m+[m[32m                        <button type="button" class="btn btn-warning" onclick="reviseTopic(${wt.topic_id}, ${wt.course_id})" style="font-size: 0.8125rem; padding: 0.4rem 0.85rem; font-weight: 600;">[m
+[32m+[m[32m                            Revise Topic ↺[m
+[32m+[m[32m                        </button>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                `;[m
+[32m+[m
+[32m+[m[32m                dashboardContainer.appendChild(item);[m
+[32m+[m[32m            });[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Failed to load weak topics:', err);[m
+[32m+[m[32m        if (dashboardContainer) {[m
+[32m+[m[32m            dashboardContainer.innerHTML = `[m
+[32m+[m[32m                <div style="color: var(--danger-color); font-size: 0.875rem; padding: 1rem 0;">[m
+[32m+[m[32m                    Unable to load weak topics from server.[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m            `;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (badge) badge.innerText = "Error";[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Attach to window for test verification & cross-module integration[m
+[32m+[m[32mif (typeof window !== 'undefined') {[m
+[32m+[m[32m    window.learningConfig = learningConfig;[m
+[32m+[m[32m    window.getLearningConfig = getLearningConfig;[m
+[32m+[m[32m    window.isConfigurationValid = isConfigurationValid;[m
+[32m+[m[32m    window.generateAnswer = generateAnswer;[m
+[32m+[m[32m    window.prepareGeneration = prepareGeneration;[m
+[32m+[m[32m    window.startMcqAssessment = startMcqAssessment;[m
+[32m+[m[32m    window.submitAssessment = submitAssessment;[m
+[32m+[m[32m    window.cancelAssessment = cancelAssessment;[m
+[32m+[m[32m    window.reviseTopic = reviseTopic;[m
+[32m+[m[32m    window.loadWeakTopics = loadWeakTopics;[m
+[32m+[m[32m}[m
+[32m+[m
+ /* =========================================================[m
+    Student Dashboard Logic (dashboard.html)[m
+    ========================================================= */[m
+ [m
+ function initStudentDashboard() {[m
+[31m-    // Populate or wire dashboard elements[m
+     const demoBtn = document.getElementById('btn-dashboard-demo');[m
+     if (demoBtn) {[m
+         demoBtn.addEventListener('click', () => {[m
+[31m-            window.location.href = "learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer";[m
+[32m+[m[32m            window.location.href = "learning.html?course_id=1&unit_id=1&topic_id=1&level=intermediate&lang=english&marks=5&mode=exam_answer";[m
+         });[m
+     }[m
+[32m+[m[32m    loadWeakTopics();[m
+ }[m
+ [m
+ // Auto-run on DOM ready[m
+[1mdiff --git a/js/teacher.js b/js/teacher.js[m
+[1mindex 460da9f..4ae2e01 100644[m
+[1m--- a/js/teacher.js[m
+[1m+++ b/js/teacher.js[m
+[36m@@ -1,7 +1,9 @@[m
+ /**[m
+[31m- * Teacher-specific interactions[m
+[32m+[m[32m * Teacher-specific interactions & Backend API Integration[m
+  */[m
+ [m
+[32m+[m[32mconst TEACHER_API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '/api';[m
+[32m+[m
+ /* =========================================================[m
+    Course Builder Logic (teacher/course.html)[m
+    ========================================================= */[m
+[36m@@ -16,7 +18,7 @@[m [mfunction addUnit() {[m
+     if (!container) return;[m
+ [m
+     const unitHTML = `[m
+[31m-        <div class="unit-card" id="unit-${unitCounter}">[m
+[32m+[m[32m        <div class="unit-card" id="unit-${unitCounter}" data-unit-idx="${unitCounter}">[m
+             <div class="unit-header">[m
+                 <input type="text" class="unit-title-input" value="Unit ${unitCounter}: New Unit" placeholder="Unit Name">[m
+                 <div class="flex gap-2">[m
+[36m@@ -36,18 +38,25 @@[m [mfunction addUnit() {[m
+     [m
+     container.insertAdjacentHTML('beforeend', unitHTML);[m
+     addTopic(unitCounter); // Add an initial topic[m
+[31m-    showToast('New unit added', 'success');[m
+[32m+[m[32m    if (typeof showToast === 'function') {[m
+[32m+[m[32m        showToast('New unit added', 'info');[m
+[32m+[m[32m    }[m
+ }[m
+ [m
+ function removeUnit(unitId) {[m
+     const unit = document.getElementById(`unit-${unitId}`);[m
+     if (unit) {[m
+         unit.remove();[m
+[31m-        showToast('Unit removed', 'info');[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Unit removed', 'info');[m
+[32m+[m[32m        }[m
+     }[m
+ }[m
+ [m
+ function addTopic(unitId) {[m
+[32m+[m[32m    if (!topicCounters[unitId]) {[m
+[32m+[m[32m        topicCounters[unitId] = 0;[m
+[32m+[m[32m    }[m
+     topicCounters[unitId]++;[m
+     const topicId = topicCounters[unitId];[m
+     [m
+[36m@@ -74,23 +83,280 @@[m [mfunction removeTopic(unitId, topicId) {[m
+     }[m
+ }[m
+ [m
+[31m-function saveCourse() {[m
+[31m-    const title = document.getElementById('course-title').value;[m
+[31m-    if (!title) {[m
+[31m-        showToast('Please enter a course title', 'error');[m
+[32m+[m[32masync function saveCourse() {[m
+[32m+[m[32m    const titleInput = document.getElementById('course-title');[m
+[32m+[m[32m    const descInput = document.getElementById('course-description');[m
+[32m+[m[32m    const saveBtn = document.getElementById('save-course-btn');[m
+[32m+[m
+[32m+[m[32m    const courseTitle = titleInput ? titleInput.value.trim() : '';[m
+[32m+[m[32m    const description = descInput ? descInput.value.trim() : '';[m
+[32m+[m
+[32m+[m[32m    if (!courseTitle) {[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Please enter a course title.', 'error');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            alert('Please enter a course title.');[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // Check units[m
+[32m+[m[32m    const unitCards = document.querySelectorAll('#units-container .unit-card');[m
+[32m+[m[32m    if (unitCards.length === 0) {[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Please add at least one unit.', 'warning');[m
+[32m+[m[32m        }[m
+         return;[m
+     }[m
+[31m-    // Logic to serialize data and send to backend would go here[m
+[31m-    showToast('Course saved successfully!', 'success');[m
+[31m-    setTimeout(() => {[m
+[31m-        window.location.href = 'dashboard.html';[m
+[31m-    }, 1500);[m
+[32m+[m
+[32m+[m[32m    if (saveBtn) {[m
+[32m+[m[32m        saveBtn.disabled = true;[m
+[32m+[m[32m        saveBtn.innerText = 'Saving Course...';[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        // Step 1: Create Course (API expects {"course_name": ..., "description": ...})[m
+[32m+[m[32m        const courseRes = await fetch(`${TEACHER_API_BASE}/courses`, {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            headers: { 'Content-Type': 'application/json' },[m
+[32m+[m[32m            body: JSON.stringify({[m
+[32m+[m[32m                course_name: courseTitle,[m
+[32m+[m[32m                description: description[m
+[32m+[m[32m            })[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        const courseData = await courseRes.json();[m
+[32m+[m[32m        if (!courseRes.ok) {[m
+[32m+[m[32m            throw new Error(courseData.error || 'Failed to create course');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        const courseId = courseData.course_id || (courseData.course && courseData.course.course_id);[m
+[32m+[m
+[32m+[m[32m        // Step 2 & 3: Iterate through units and topics[m
+[32m+[m[32m        let unitSeq = 1;[m
+[32m+[m[32m        for (const unitCard of unitCards) {[m
+[32m+[m[32m            const unitTitleInput = unitCard.querySelector('.unit-title-input');[m
+[32m+[m[32m            const unitName = unitTitleInput ? unitTitleInput.value.trim() : `Unit ${unitSeq}`;[m
+[32m+[m
+[32m+[m[32m            // API expects {"unit_number": unitSeq, "unit_name": unitName}[m
+[32m+[m[32m            const unitRes = await fetch(`${TEACHER_API_BASE}/courses/${courseId}/units`, {[m
+[32m+[m[32m                method: 'POST',[m
+[32m+[m[32m                headers: { 'Content-Type': 'application/json' },[m
+[32m+[m[32m                body: JSON.stringify({ unit_number: unitSeq, unit_name: unitName })[m
+[32m+[m[32m            });[m
+[32m+[m
+[32m+[m[32m            const unitData = await unitRes.json();[m
+[32m+[m[32m            if (!unitRes.ok) {[m
+[32m+[m[32m                throw new Error(unitData.error || `Failed to create Unit ${unitSeq}`);[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            const unitId = unitData.unit_id || (unitData.unit && unitData.unit.unit_id);[m
+[32m+[m
+[32m+[m[32m            // Find all topics in this unit card[m
+[32m+[m[32m            const topicInputs = unitCard.querySelectorAll('.topic-title-input');[m
+[32m+[m[32m            for (const topicInput of topicInputs) {[m
+[32m+[m[32m                const topicName = topicInput.value.trim();[m
+[32m+[m[32m                if (topicName) {[m
+[32m+[m[32m                    // API expects {"topic_name": topicName}[m
+[32m+[m[32m                    const topicRes = await fetch(`${TEACHER_API_BASE}/units/${unitId}/topics`, {[m
+[32m+[m[32m                        method: 'POST',[m
+[32m+[m[32m                        headers: { 'Content-Type': 'application/json' },[m
+[32m+[m[32m                        body: JSON.stringify({ topic_name: topicName })[m
+[32m+[m[32m                    });[m
+[32m+[m[32m                    const topicData = await topicRes.json();[m
+[32m+[m[32m                    if (!topicRes.ok) {[m
+[32m+[m[32m                        throw new Error(topicData.error || `Failed to create topic "${topicName}"`);[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m            unitSeq++;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Course, units, and topics saved successfully!', 'success');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m            window.location.href = 'dashboard.html';[m
+[32m+[m[32m        }, 1200);[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Error saving course:', err);[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast(`Error: ${err.message}`, 'error');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            alert(`Error: ${err.message}`);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (saveBtn) {[m
+[32m+[m[32m            saveBtn.disabled = false;[m
+[32m+[m[32m            saveBtn.innerText = 'Save Course';[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+ }[m
+ [m
+ /* =========================================================[m
+    Materials Upload Logic (teacher/materials.html)[m
+    ========================================================= */[m
+ [m
+[32m+[m[32mlet coursesMap = {};[m
+[32m+[m
+[32m+[m[32masync function loadCoursesForUpload() {[m
+[32m+[m[32m    const courseSelect = document.getElementById('course-select');[m
+[32m+[m[32m    if (!courseSelect) return;[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${TEACHER_API_BASE}/courses`);[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m[32m        const courseList = Array.isArray(data) ? data : (data.courses || []);[m
+[32m+[m
+[32m+[m[32m        if (res.ok && courseList.length > 0) {[m
+[32m+[m[32m            courseSelect.innerHTML = '<option value="">Select Course</option>';[m
+[32m+[m[32m            courseList.forEach(c => {[m
+[32m+[m[32m                const cId = c.course_id;[m
+[32m+[m[32m                const cName = c.course_name || c.title;[m
+[32m+[m[32m                coursesMap[cId] = cName;[m
+[32m+[m[32m                const opt = document.createElement('option');[m
+[32m+[m[32m                opt.value = cId;[m
+[32m+[m[32m                opt.textContent = `${cName} (ID: ${cId})`;[m
+[32m+[m[32m                courseSelect.appendChild(opt);[m
+[32m+[m[32m            });[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            courseSelect.innerHTML = '<option value="">No courses available. Create a course first.</option>';[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Failed to load courses for upload dropdown:', err);[m
+[32m+[m[32m        courseSelect.innerHTML = '<option value="">Error loading courses</option>';[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    courseSelect.addEventListener('change', async () => {[m
+[32m+[m[32m        const courseId = courseSelect.value;[m
+[32m+[m[32m        const unitSelect = document.getElementById('unit-select');[m
+[32m+[m[32m        const topicSelect = document.getElementById('topic-select');[m
+[32m+[m
+[32m+[m[32m        if (unitSelect) {[m
+[32m+[m[32m            unitSelect.innerHTML = '<option value="">Select Unit (Optional)</option>';[m
+[32m+[m[32m            unitSelect.disabled = !courseId;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (topicSelect) {[m
+[32m+[m[32m            topicSelect.innerHTML = '<option value="">Select Topic (Optional)</option>';[m
+[32m+[m[32m            topicSelect.disabled = true;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (!courseId || !unitSelect) return;[m
+[32m+[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            // Fetch course with units & topics via GET /api/courses/<id>[m
+[32m+[m[32m            const res = await fetch(`${TEACHER_API_BASE}/courses/${courseId}`);[m
+[32m+[m[32m            const data = await res.json();[m
+[32m+[m[32m            if (res.ok && data && data.units && data.units.length > 0) {[m
+[32m+[m[32m                window._currentCourseUnits = data.units;[m
+[32m+[m[32m                data.units.forEach(u => {[m
+[32m+[m[32m                    const opt = document.createElement('option');[m
+[32m+[m[32m                    opt.value = u.unit_id;[m
+[32m+[m[32m                    opt.textContent = u.unit_name || u.title || `Unit ${u.unit_number}`;[m
+[32m+[m[32m                    unitSelect.appendChild(opt);[m
+[32m+[m[32m                });[m
+[32m+[m[32m                unitSelect.disabled = false;[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                unitSelect.innerHTML = '<option value="">No units found for this course</option>';[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (err) {[m
+[32m+[m[32m            console.error('Failed to load course details and units:', err);[m
+[32m+[m[32m        }[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    const unitSelect = document.getElementById('unit-select');[m
+[32m+[m[32m    if (unitSelect) {[m
+[32m+[m[32m        unitSelect.addEventListener('change', () => {[m
+[32m+[m[32m            const unitId = unitSelect.value;[m
+[32m+[m[32m            const topicSelect = document.getElementById('topic-select');[m
+[32m+[m[32m            if (!topicSelect) return;[m
+[32m+[m[32m            topicSelect.innerHTML = '<option value="">Select Topic (Optional)</option>';[m
+[32m+[m
+[32m+[m[32m            if (!unitId || !window._currentCourseUnits) {[m
+[32m+[m[32m                topicSelect.disabled = true;[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            const selectedUnit = window._currentCourseUnits.find(u => String(u.unit_id) === String(unitId));[m
+[32m+[m[32m            if (selectedUnit && selectedUnit.topics && selectedUnit.topics.length > 0) {[m
+[32m+[m[32m                selectedUnit.topics.forEach(t => {[m
+[32m+[m[32m                    const opt = document.createElement('option');[m
+[32m+[m[32m                    opt.value = t.topic_id;[m
+[32m+[m[32m                    opt.textContent = t.topic_name || t.title;[m
+[32m+[m[32m                    topicSelect.appendChild(opt);[m
+[32m+[m[32m                });[m
+[32m+[m[32m                topicSelect.disabled = false;[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                topicSelect.innerHTML = '<option value="">No topics in this unit</option>';[m
+[32m+[m[32m            }[m
+[32m+[m[32m        });[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32masync function loadMaterials() {[m
+[32m+[m[32m    const list = document.getElementById('material-list');[m
+[32m+[m[32m    if (!list) return;[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${TEACHER_API_BASE}/materials`);[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            list.innerHTML = '<div style="color:var(--danger); padding:1rem; text-align:center;">Failed to load materials.</div>';[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        const materials = Array.isArray(data) ? data : (data.materials || []);[m
+[32m+[m[32m        if (materials.length === 0) {[m
+[32m+[m[32m            list.innerHTML = '<div style="color:var(--text-secondary); padding:1.5rem; text-align:center;">No materials uploaded yet.</div>';[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        list.innerHTML = '';[m
+[32m+[m[32m        materials.forEach(mat => {[m
+[32m+[m[32m            let badgeClass = 'badge-secondary';[m
+[32m+[m[32m            let badgeText = mat.processing_status || 'Unknown';[m
+[32m+[m[32m            let subText = '';[m
+[32m+[m
+[32m+[m[32m            if (mat.processing_status === 'processed') {[m
+[32m+[m[32m                badgeClass = 'badge-success';[m
+[32m+[m[32m                badgeText = 'Processed';[m
+[32m+[m[32m                subText = 'Extracted & Ready';[m
+[32m+[m[32m            } else if (mat.processing_status === 'pending') {[m
+[32m+[m[32m                badgeClass = 'badge-warning';[m
+[32m+[m[32m                badgeText = 'Queued (Pending AI)';[m
+[32m+[m[32m                subText = 'Processing queued';[m
+[32m+[m[32m            } else if (mat.processing_status === 'failed') {[m
+[32m+[m[32m                badgeClass = 'badge-danger';[m
+[32m+[m[32m                badgeText = 'Failed';[m
+[32m+[m[32m                subText = 'Processing failed';[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            const fileName = mat.file_name || mat.filename || `Document #${mat.material_id}`;[m
+[32m+[m[32m            const courseName = coursesMap[mat.course_id] ? `${coursesMap[mat.course_id]} (ID: ${mat.course_id})` : `Course ID: ${mat.course_id}`;[m
+[32m+[m[32m            const uploadedAt = mat.uploaded_at ? ` • ${mat.uploaded_at}` : '';[m
+[32m+[m
+[32m+[m[32m            const itemHTML = `[m
+[32m+[m[32m                <div class="material-item" id="mat-${mat.material_id}">[m
+[32m+[m[32m                    <div class="material-info">[m
+[32m+[m[32m                        <span class="material-icon">📄</span>[m
+[32m+[m[32m                        <div>[m
+[32m+[m[32m                            <div style="font-weight:500;">${fileName}</div>[m
+[32m+[m[32m                            <div style="font-size:0.75rem;color:var(--text-secondary);">${courseName}${uploadedAt} • ${subText}</div>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                    <span class="badge ${badgeClass}" id="badge-${mat.material_id}">${badgeText}</span>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m            `;[m
+[32m+[m[32m            list.insertAdjacentHTML('beforeend', itemHTML);[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Error loading materials:', err);[m
+[32m+[m[32m        list.innerHTML = '<div style="color:var(--danger); padding:1rem; text-align:center;">Error connecting to materials server.</div>';[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+ function setupFileUpload() {[m
+     const dropZone = document.getElementById('upload-zone');[m
+     const fileInput = document.getElementById('file-upload');[m
+[36m@@ -112,113 +378,330 @@[m [mfunction setupFileUpload() {[m
+     dropZone.addEventListener('drop', (e) => {[m
+         e.preventDefault();[m
+         dropZone.classList.remove('dragover');[m
+[31m-        if (e.dataTransfer.files.length) {[m
+[31m-            fileInput.files = e.dataTransfer.files;[m
+[31m-            handleFiles(fileInput.files);[m
+[32m+[m[32m        if (e.dataTransfer.files && e.dataTransfer.files.length) {[m
+[32m+[m[32m            handleFiles(e.dataTransfer.files);[m
+         }[m
+     });[m
+ [m
+     fileInput.addEventListener('change', () => {[m
+[31m-        if (fileInput.files.length) {[m
+[32m+[m[32m        if (fileInput.files && fileInput.files.length) {[m
+             handleFiles(fileInput.files);[m
+[32m+[m[32m            fileInput.value = '';[m
+         }[m
+     });[m
+ }[m
+ [m
+[31m-function handleFiles(files) {[m
+[32m+[m[32masync function handleFiles(files) {[m
+[32m+[m[32m    if (!files || !files.length) {[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('No file selected.', 'warning');[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+     const file = files[0];[m
+[31m-    if (file.type !== 'application/pdf') {[m
+[31m-        showToast('Please upload a PDF file.', 'error');[m
+[32m+[m[32m    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Please upload a valid PDF file.', 'error');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            alert('Please upload a valid PDF file.');[m
+[32m+[m[32m        }[m
+         return;[m
+     }[m
+     [m
+[31m-    const course = document.getElementById('course-select').value;[m
+[31m-    const unit = document.getElementById('unit-select').value;[m
+[31m-    const topic = document.getElementById('topic-select').value;[m
+[32m+[m[32m    const courseSelect = document.getElementById('course-select');[m
+[32m+[m[32m    const courseId = courseSelect ? courseSelect.value : '';[m
+     [m
+[31m-    if(!course || !unit || !topic) {[m
+[31m-        showToast('Please select Course, Unit, and Topic first.', 'warning');[m
+[32m+[m[32m    if (!courseId) {[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Please select a Course first.', 'warning');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            alert('Please select a Course first.');[m
+[32m+[m[32m        }[m
+         return;[m
+     }[m
+ [m
+[31m-    simulateUploadProcess(file.name);[m
+[32m+[m[32m    await uploadAndProcessMaterial(file, courseId);[m
+ }[m
+ [m
+[31m-function simulateUploadProcess(filename) {[m
+[31m-    showToast(`Uploading ${filename}...`, 'info');[m
+[31m-    [m
+[31m-    // Create new list item[m
+[31m-    const list = document.getElementById('material-list');[m
+[31m-    const id = Date.now();[m
+[31m-    const itemHTML = `[m
+[31m-        <div class="material-item" id="mat-${id}">[m
+[31m-            <div class="material-info">[m
+[31m-                <span class="material-icon">📄</span>[m
+[31m-                <div>[m
+[31m-                    <div style="font-weight:500;">${filename}</div>[m
+[31m-                    <div style="font-size:0.75rem;color:var(--text-secondary);">Processing...</div>[m
+[31m-                </div>[m
+[31m-            </div>[m
+[31m-            <span class="badge badge-warning" id="badge-${id}">Processing</span>[m
+[31m-        </div>[m
+[31m-    `;[m
+[31m-    list.insertAdjacentHTML('afterbegin', itemHTML);[m
+[32m+[m[32masync function uploadAndProcessMaterial(file, courseId) {[m
+[32m+[m[32m    if (typeof showToast === 'function') {[m
+[32m+[m[32m        showToast(`Uploading ${file.name}...`, 'info');[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const formData = new FormData();[m
+[32m+[m[32m    formData.append('course_id', courseId);[m
+[32m+[m[32m    formData.append('file', file);[m
+[32m+[m
+[32m+[m[32m    let materialId = null;[m
+ [m
+[31m-    // Simulate backend processing[m
+[31m-    setTimeout(() => {[m
+[31m-        const badge = document.getElementById(`badge-${id}`);[m
+[31m-        const info = document.querySelector(`#mat-${id} .material-info div:nth-child(2)`);[m
+[31m-        if (badge && info) {[m
+[31m-            badge.className = 'badge badge-success';[m
+[31m-            badge.innerText = 'Processed';[m
+[31m-            info.innerText = 'AI extracted successfully';[m
+[31m-            showToast('Document processed successfully!', 'success');[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        // Step 1: Upload material to POST /api/materials/upload[m
+[32m+[m[32m        const uploadRes = await fetch(`${TEACHER_API_BASE}/materials/upload`, {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            body: formData[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        const uploadData = await uploadRes.json();[m
+[32m+[m[32m        if (!uploadRes.ok) {[m
+[32m+[m[32m            throw new Error(uploadData.error || 'Upload failed');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        materialId = uploadData.material_id || (uploadData.material && uploadData.material.material_id);[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('PDF uploaded successfully! Triggering processing...', 'success');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Refresh material list immediately to show newly uploaded pending item[m
+[32m+[m[32m        await loadMaterials();[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Material upload error:', err);[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast(`Upload failed: ${err.message}`, 'error');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            alert(`Upload failed: ${err.message}`);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (!materialId) return;[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        // Step 2: Trigger material processing via POST /api/materials/<material_id>/process[m
+[32m+[m[32m        const processRes = await fetch(`${TEACHER_API_BASE}/materials/${materialId}/process`, {[m
+[32m+[m[32m            method: 'POST'[m
+[32m+[m[32m        });[m
+[32m+[m[32m        const processData = await processRes.json();[m
+[32m+[m
+[32m+[m[32m        if (!processRes.ok) {[m
+[32m+[m[32m            throw new Error(processData.error || 'Processing request failed');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (processData.processing_status === 'pending') {[m
+[32m+[m[32m            if (typeof showToast === 'function') {[m
+[32m+[m[32m                showToast('Material queued for processing (AI module pending).', 'warning');[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } else if (processData.processing_status === 'processed') {[m
+[32m+[m[32m            if (typeof showToast === 'function') {[m
+[32m+[m[32m                showToast('Material processed successfully!', 'success');[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } else if (processData.processing_status === 'failed') {[m
+[32m+[m[32m            if (typeof showToast === 'function') {[m
+[32m+[m[32m                showToast('Material processing failed.', 'error');[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Refresh material list with updated status[m
+[32m+[m[32m        await loadMaterials();[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Material process error:', err);[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast(`Processing error: ${err.message}`, 'error');[m
+         }[m
+[31m-    }, 3000);[m
+[32m+[m[32m        await loadMaterials();[m
+[32m+[m[32m    }[m
+ }[m
+ [m
+ /* =========================================================[m
+    Review Logic (teacher/review.html)[m
+    ========================================================= */[m
+ [m
+[31m-function approveAnswer(id) {[m
+[32m+[m[32masync function loadPendingReviews() {[m
+[32m+[m[32m    const container = document.getElementById('review-cards-container');[m
+[32m+[m[32m    const badge = document.getElementById('pending-reviews-badge');[m
+[32m+[m[32m    if (!container) return;[m
+[32m+[m
+[32m+[m[32m    container.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--text-secondary);">Loading pending reviews from database...</div>';[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${TEACHER_API_BASE}/answers?approval_status=pending`);[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            container.innerHTML = `<div style="color:var(--danger-color); padding:1rem; text-align:center;">Failed to load answers: ${data.error || 'Server error'}</div>`;[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        const answers = Array.isArray(data) ? data : (data.answers || []);[m
+[32m+[m[32m        if (badge) {[m
+[32m+[m[32m            badge.innerText = `${answers.length} Pending`;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (answers.length === 0) {[m
+[32m+[m[32m            container.innerHTML = `[m
+[32m+[m[32m                <div class="card" style="padding: 2.5rem; text-align: center; color: var(--text-secondary);">[m
+[32m+[m[32m                    <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🎉</div>[m
+[32m+[m[32m                    <h3 style="margin-bottom: 0.5rem; color: var(--text-primary);">No Pending Reviews</h3>[m
+[32m+[m[32m                    <p>All answers have been approved or rejected.</p>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m            `;[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        container.innerHTML = '';[m
+[32m+[m[32m        answers.forEach(ans => {[m
+[32m+[m[32m            const rawContent = ans.answer_text || ans.answer || '(Empty answer content)';[m
+[32m+[m[32m            const formattedContent = rawContent.replace(/\n/g, '<br>');[m
+[32m+[m[32m            const sourceRef = ans.source_reference[m
+[32m+[m[32m                ? `<div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.75rem; padding-top:0.5rem; border-top:1px dashed var(--border-color);"><strong>Source Reference:</strong> ${ans.source_reference}</div>`[m
+[32m+[m[32m                : '';[m
+[32m+[m[32m            const verificationInfo = `Source Verified: ${ans.source_verified ? '✓ Yes' : '✗ No'} • Keywords Verified: ${ans.keywords_verified ? '✓ Yes' : '✗ No'}`;[m
+[32m+[m
+[32m+[m[32m            const cardHTML = `[m
+[32m+[m[32m                <div class="card review-card" id="review-${ans.answer_id}">[m
+[32m+[m[32m                    <div class="review-header">[m
+[32m+[m[32m                        <div>[m
+[32m+[m[32m                            <div class="review-meta" style="margin-bottom:0.25rem;">[m
+[32m+[m[32m                                Topic ID: ${ans.topic_id} • Level: ${ans.level || 'intermediate'} • Language: ${ans.language || 'english'} • ${ans.marks || 5} Marks • Mode: ${ans.mode || 'exam'}[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">[m
+[32m+[m[32m                                ${verificationInfo}[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <h3 class="review-title" style="margin:0; font-size:1.125rem;">Answer #${ans.answer_id}</h3>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                        <span class="badge badge-warning" id="status-${ans.answer_id}">Pending Review</span>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                    <div class="review-body review-answer" id="answer-text-${ans.answer_id}">[m
+[32m+[m[32m                        ${formattedContent}[m
+[32m+[m[32m                        ${sourceRef}[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                    <div class="review-actions" id="actions-${ans.answer_id}">[m
+[32m+[m[32m                        <button type="button" class="btn btn-secondary" id="edit-btn-${ans.answer_id}" onclick="toggleEditAnswer(${ans.answer_id})">Edit Answer</button>[m
+[32m+[m[32m                        <button type="button" class="btn btn-danger" onclick="rejectAnswer(${ans.answer_id})">Reject</button>[m
+[32m+[m[32m                        <button type="button" class="btn btn-primary" onclick="approveAnswer(${ans.answer_id})">Approve Answer</button>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m            `;[m
+[32m+[m[32m            container.insertAdjacentHTML('beforeend', cardHTML);[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Error loading pending reviews:', err);[m
+[32m+[m[32m        container.innerHTML = '<div style="color:var(--danger-color); padding:1rem; text-align:center;">Error connecting to answers server.</div>';[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32masync function approveAnswer(id) {[m
+     const card = document.getElementById(`review-${id}`);[m
+     const statusBadge = document.getElementById(`status-${id}`);[m
+[31m-    if (card && statusBadge) {[m
+[31m-        card.className = 'card review-card approved';[m
+[31m-        statusBadge.className = 'badge badge-success';[m
+[31m-        statusBadge.innerText = 'Approved';[m
+[31m-        showToast('Answer approved for students.', 'success');[m
+[31m-        removeActionButtons(id);[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${TEACHER_API_BASE}/answers/${id}/approve`, {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            headers: { 'Content-Type': 'application/json' }[m
+[32m+[m[32m        });[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            throw new Error(data.error || 'Failed to approve answer');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (card && statusBadge) {[m
+[32m+[m[32m            card.className = 'card review-card approved';[m
+[32m+[m[32m            statusBadge.className = 'badge badge-success';[m
+[32m+[m[32m            statusBadge.innerText = 'Approved';[m
+[32m+[m[32m            removeActionButtons(id);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Answer approved for students.', 'success');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Remove processed answer from pending list after confirmation[m
+[32m+[m[32m        setTimeout(async () => {[m
+[32m+[m[32m            if (card) card.remove();[m
+[32m+[m[32m            const remaining = document.querySelectorAll('#review-cards-container .review-card');[m
+[32m+[m[32m            if (remaining.length === 0) {[m
+[32m+[m[32m                await loadPendingReviews();[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                updatePendingBadgeCount(-1);[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }, 900);[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Error approving answer:', err);[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast(`Error approving answer: ${err.message}`, 'error');[m
+[32m+[m[32m        }[m
+     }[m
+ }[m
+ [m
+[31m-function rejectAnswer(id) {[m
+[32m+[m[32masync function rejectAnswer(id) {[m
+     const card = document.getElementById(`review-${id}`);[m
+     const statusBadge = document.getElementById(`status-${id}`);[m
+[31m-    if (card && statusBadge) {[m
+[31m-        card.className = 'card review-card rejected';[m
+[31m-        statusBadge.className = 'badge badge-danger';[m
+[31m-        statusBadge.innerText = 'Rejected';[m
+[31m-        showToast('Answer rejected.', 'error');[m
+[31m-        removeActionButtons(id);[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const res = await fetch(`${TEACHER_API_BASE}/answers/${id}/reject`, {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            headers: { 'Content-Type': 'application/json' }[m
+[32m+[m[32m        });[m
+[32m+[m[32m        const data = await res.json();[m
+[32m+[m
+[32m+[m[32m        if (!res.ok) {[m
+[32m+[m[32m            throw new Error(data.error || 'Failed to reject answer');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (card && statusBadge) {[m
+[32m+[m[32m            card.className = 'card review-card rejected';[m
+[32m+[m[32m            statusBadge.className = 'badge badge-danger';[m
+[32m+[m[32m            statusBadge.innerText = 'Rejected';[m
+[32m+[m[32m            removeActionButtons(id);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Answer rejected.', 'info');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Remove processed answer from pending list after confirmation[m
+[32m+[m[32m        setTimeout(async () => {[m
+[32m+[m[32m            if (card) card.remove();[m
+[32m+[m[32m            const remaining = document.querySelectorAll('#review-cards-container .review-card');[m
+[32m+[m[32m            if (remaining.length === 0) {[m
+[32m+[m[32m                await loadPendingReviews();[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                updatePendingBadgeCount(-1);[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }, 900);[m
+[32m+[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Error rejecting answer:', err);[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast(`Error rejecting answer: ${err.message}`, 'error');[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction updatePendingBadgeCount(delta) {[m
+[32m+[m[32m    const badge = document.getElementById('pending-reviews-badge');[m
+[32m+[m[32m    if (badge) {[m
+[32m+[m[32m        const currentText = badge.innerText;[m
+[32m+[m[32m        const currentCount = parseInt(currentText, 10);[m
+[32m+[m[32m        if (!isNaN(currentCount)) {[m
+[32m+[m[32m            const nextCount = Math.max(0, currentCount + delta);[m
+[32m+[m[32m            badge.innerText = `${nextCount} Pending`;[m
+[32m+[m[32m        }[m
+     }[m
+ }[m
+ [m
+ function toggleEditAnswer(id) {[m
+     const answerDiv = document.getElementById(`answer-text-${id}`);[m
+     const btn = document.getElementById(`edit-btn-${id}`);[m
+[32m+[m[32m    if (!answerDiv || !btn) return;[m
+     [m
+     if (answerDiv.querySelector('textarea')) {[m
+[31m-        // Save logic[m
+[32m+[m[32m        // Save logic (local draft update)[m
+         const newText = answerDiv.querySelector('textarea').value;[m
+         answerDiv.innerHTML = newText.replace(/\n/g, '<br>');[m
+         btn.innerText = 'Edit Answer';[m
+[31m-        showToast('Answer updated manually.', 'success');[m
+[32m+[m[32m        if (typeof showToast === 'function') {[m
+[32m+[m[32m            showToast('Answer updated manually in draft.', 'success');[m
+[32m+[m[32m        }[m
+     } else {[m
+         // Edit logic[m
+[31m-        const currentText = answerDiv.innerHTML.replace(/<br>/g, '\n');[m
+[31m-        answerDiv.innerHTML = `<textarea>${currentText}</textarea>`;[m
+[32m+[m[32m        const currentText = answerDiv.innerHTML.replace(/<br\s*[\/]?>/gi, '\n').trim();[m
+[32m+[m[32m        answerDiv.innerHTML = `<textarea style="width:100%; min-height:120px; font-family:inherit; font-size:0.9rem; padding:0.5rem; border:1px solid var(--border-color); border-radius:var(--radius-sm);">${currentText}</textarea>`;[m
+         btn.innerText = 'Save Changes';[m
+     }[m
+ }[m
+[36m@@ -230,8 +713,64 @@[m [mfunction removeActionButtons(id) {[m
+     }[m
+ }[m
+ [m
+[31m-// Initialize on load[m
+[32m+[m[32m/* =========================================================[m
+[32m+[m[32m   Teacher Dashboard Logic (teacher/dashboard.html)[m
+[32m+[m[32m   ========================================================= */[m
+[32m+[m
+[32m+[m[32masync function initTeacherDashboard() {[m
+[32m+[m[32m    const coursesStat = document.getElementById('stat-total-courses');[m
+[32m+[m[32m    const materialsStat = document.getElementById('stat-total-materials');[m
+[32m+[m[32m    const reviewsStat = document.getElementById('stat-pending-reviews');[m
+[32m+[m
+[32m+[m[32m    if (!coursesStat && !materialsStat && !reviewsStat) return;[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const coursesRes = await fetch(`${TEACHER_API_BASE}/courses`);[m
+[32m+[m[32m        if (coursesRes.ok) {[m
+[32m+[m[32m            const data = await coursesRes.json();[m
+[32m+[m[32m            const list = Array.isArray(data) ? data : (data.courses || []);[m
+[32m+[m[32m            if (coursesStat) {[m
+[32m+[m[32m                coursesStat.innerText = list.length;[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Dashboard courses count error:', err);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const materialsRes = await fetch(`${TEACHER_API_BASE}/materials`);[m
+[32m+[m[32m        if (materialsRes.ok) {[m
+[32m+[m[32m            const data = await materialsRes.json();[m
+[32m+[m[32m            const list = Array.isArray(data) ? data : (data.materials || []);[m
+[32m+[m[32m            if (materialsStat) {[m
+[32m+[m[32m                materialsStat.innerText = list.length;[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Dashboard materials count error:', err);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const reviewsRes = await fetch(`${TEACHER_API_BASE}/answers?approval_status=pending`);[m
+[32m+[m[32m        if (reviewsRes.ok) {[m
+[32m+[m[32m            const data = await reviewsRes.json();[m
+[32m+[m[32m            const list = Array.isArray(data) ? data : (data.answers || []);[m
+[32m+[m[32m            if (reviewsStat) {[m
+[32m+[m[32m                reviewsStat.innerText = list.length;[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (err) {[m
+[32m+[m[32m        console.error('Dashboard pending reviews count error:', err);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Initialize on DOM load[m
+ document.addEventListener('DOMContentLoaded', () => {[m
+[32m+[m[32m    // If on teacher dashboard[m
+[32m+[m[32m    if (document.getElementById('stat-total-courses') || document.getElementById('stat-total-materials')) {[m
+[32m+[m[32m        initTeacherDashboard();[m
+[32m+[m[32m    }[m
+[32m+[m
+     // If on course builder[m
+     if (document.getElementById('units-container')) {[m
+         addUnit();[m
+[36m@@ -240,5 +779,12 @@[m [mdocument.addEventListener('DOMContentLoaded', () => {[m
+     // If on materials page[m
+     if (document.getElementById('upload-zone')) {[m
+         setupFileUpload();[m
+[32m+[m[32m        loadCoursesForUpload();[m
+[32m+[m[32m        loadMaterials();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // If on review page[m
+[32m+[m[32m    if (document.getElementById('review-cards-container')) {[m
+[32m+[m[32m        loadPendingReviews();[m
+     }[m
+ });[m
+[1mdiff --git a/student/dashboard.html b/student/dashboard.html[m
+[1mindex c779092..80a050b 100644[m
+[1m--- a/student/dashboard.html[m
+[1m+++ b/student/dashboard.html[m
+[36m@@ -45,7 +45,7 @@[m
+                     <h2>Welcome back, Keshav! 🚀</h2>[m
+                     <p>Syllabus-aligned AI learning grounded in your teacher's verified academic materials. Select topics, customize your exam marks, and write answers with confidence.</p>[m
+                     <div class="flex items-center gap-2" style="flex-wrap: wrap;">[m
+[31m-                        <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn" style="background-color: white; color: var(--primary-color); font-weight: 600;">[m
+[32m+[m[32m                        <a href="learning.html?course_id=1&unit_id=1&topic_id=1&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn" style="background-color: white; color: var(--primary-color); font-weight: 600;">[m
+                             ⚡ Launch Primary Demo: Normalization (5 Marks, Exam Answer)[m
+                         </a>[m
+                         <a href="learning.html" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">[m
+[36m@@ -128,7 +128,7 @@[m
+                             </div>[m
+ [m
+                             <div class="flex gap-2" style="margin-top: 0.5rem;">[m
+[31m-                                <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-primary w-full">[m
+[32m+[m[32m                                <a href="learning.html?course_id=1&unit_id=1&topic_id=1&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-primary w-full">[m
+                                     Continue: Normalization (5M)[m
+                                 </a>[m
+                             </div>[m
+[36m@@ -225,7 +225,7 @@[m
+                                     <span style="font-weight: 500; color: var(--primary-color);">Exam Answer</span>[m
+                                 </td>[m
+                                 <td style="padding: 0.85rem 0.5rem;">[m
+[31m-                                    <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">[m
+[32m+[m[32m                                    <a href="learning.html?course_id=1&unit_id=1&topic_id=1&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">[m
+                                         Resume Session ↻[m
+                                     </a>[m
+                                 </td>[m
+[36m@@ -253,6 +253,26 @@[m
+                     </table>[m
+                 </div>[m
+ [m
+[32m+[m[32m                <!-- Flagged Weak Topics & Targeted Revision Section -->[m
+[32m+[m[32m                <div class="card" id="dashboard-weak-topics-card" style="margin-top: 1.5rem;">[m
+[32m+[m[32m                    <div class="flex justify-between items-center mb-2">[m
+[32m+[m[32m                        <div class="flex items-center gap-2">[m
+[32m+[m[32m                            <h3 style="margin:0;">⚠️ Flagged Weak Topics</h3>[m
+[32m+[m[32m                            <span class="badge badge-warning" id="weak-topics-count">Loading...</span>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                        <span class="text-secondary" style="font-size:0.875rem;">MCQ Performance &lt; 60%</span>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                    <p class="text-secondary" style="font-size:0.875rem; margin-bottom: 1rem;">[m
+[32m+[m[32m                        Topics identified as needing targeted revision based on your recent assessment performance. Click Revise Topic to review grounded explanations.[m
+[32m+[m[32m                    </p>[m
+[32m+[m
+[32m+[m[32m                    <div id="dashboard-weak-topics-container" style="display: flex; flex-direction: column; gap: 0.75rem;">[m
+[32m+[m[32m                        <div class="text-secondary" style="padding: 1rem 0; font-size: 0.875rem;">[m
+[32m+[m[32m                            Loading identified weak topics from database...[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                </div>[m
+[32m+[m
+             </div>[m
+         </main>[m
+     </div>[m
+[1mdiff --git a/student/learning.html b/student/learning.html[m
+[1mindex cbd378c..a6e017b 100644[m
+[1m--- a/student/learning.html[m
+[1m+++ b/student/learning.html[m
+[36m@@ -229,42 +229,82 @@[m
+                             </div>[m
+                         </div>[m
+ [m
+[31m-                        <div class="flex" style="justify-content: flex-end; gap: 1rem; margin-top: 1rem;">[m
+[32m+[m[32m                        <div class="flex" style="justify-content: flex-end; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">[m
+                             <a href="dashboard.html" class="btn btn-secondary">Back to Dashboard</a>[m
+[31m-                            <button type="button" class="btn btn-primary" id="btn-generate-prep" onclick="prepareGeneration()" disabled>[m
+[32m+[m[32m                            <button type="button" class="btn btn-secondary" id="btn-topic-assessment" onclick="startMcqAssessment()" disabled>[m
+[32m+[m[32m                                Practice MCQs (3Q) 📝[m
+[32m+[m[32m                            </button>[m
+[32m+[m[32m                            <button type="button" class="btn btn-primary" id="btn-generate-prep" onclick="generateAnswer()" disabled>[m
+                                 Ready to Generate Answer 🚀[m
+                             </button>[m
+                         </div>[m
+                     </div>[m
+ [m
+[31m-                    <!-- Simulated Loading State (When preparing generation) -->[m
+[32m+[m[32m                    <!-- Loading State (When requesting answer generation) -->[m
+                     <div class="card loading-box" id="generation-loading">[m
+                         <div class="spinner"></div>[m
+[31m-                        <h4 style="margin-bottom: 0.25rem;">Preparing Generation Pipeline...</h4>[m
+[32m+[m[32m                        <h4 style="margin-bottom: 0.25rem;">Generating Grounded Answer...</h4>[m
+                         <p class="text-secondary" style="font-size: 0.875rem;">[m
+[31m-                            Retrieving approved study materials for selected topic and configuring prompt context...[m
+[32m+[m[32m                            Contacting backend answer generation service and grounding against syllabus...[m
+                         </p>[m
+                     </div>[m
+ [m
+[31m-                    <!-- Pipeline Preview Box (Where AI Answer will hook in) -->[m
+[31m-                    <div class="card" id="generation-pipeline-preview" style="display: none; border-left: 4px solid var(--primary-color);">[m
+[32m+[m[32m                    <!-- API Error State Container -->[m
+[32m+[m[32m                    <div class="card" id="generation-error-box" style="display: none; border-left: 4px solid var(--danger-color); background-color: #fef2f2;">[m
+                         <div class="flex justify-between items-center mb-2">[m
+[31m-                            <h3 style="margin:0;">✨ Generation Pipeline Initialized</h3>[m
+[31m-                            <span class="badge badge-success">Ready for Gemini / RAG Hookup</span>[m
+[32m+[m[32m                            <h4 style="margin:0; color: var(--danger-color);">⚠️ Generation Request Failed</h4>[m
+[32m+[m[32m                            <span class="badge badge-danger">API Error</span>[m
+                         </div>[m
+[31m-                        <p class="text-secondary" style="font-size: 0.9rem;">[m
+[31m-                            The learning configuration has been validated. In the next stage, the backend RAG module will query teacher-approved PDFs and stream the syllabus-aligned response into this container.[m
+[31m-                        </p>[m
+[32m+[m[32m                        <p id="generation-error-message" style="color: var(--danger-color); font-size: 0.9rem; margin: 0;"></p>[m
+[32m+[m[32m                    </div>[m
+ [m
+[31m-                        <div style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1rem;">[m
+[31m-                            <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">[m
+[31m-                                Active Grounding Context[m
+[32m+[m[32m                    <!-- Generation Result / Response Container -->[m
+[32m+[m[32m                    <div class="card" id="generation-result-container" style="display: none; border-left: 4px solid var(--primary-color);">[m
+[32m+[m[32m                        <div class="flex justify-between items-center mb-3" style="flex-wrap: wrap; gap: 0.5rem;">[m
+[32m+[m[32m                            <h3 style="margin:0;" id="result-heading">Structured Answer</h3>[m
+[32m+[m[32m                            <div class="flex items-center gap-2" id="result-badges">[m
+[32m+[m[32m                                <!-- Populated dynamically: status, verification, approval -->[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                        <!-- Notice banner if AI pipeline is pending -->[m
+[32m+[m[32m                        <div id="ai-pending-banner" style="display: none; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1rem; font-size: 0.875rem; color: #92400e;">[m
+[32m+[m[32m                            <strong>AI Pipeline Pending:</strong> Real AI generation awaits integration of Ankit's AI/RAG module (<code>ai.generator</code>). Displaying the response returned by <code>POST /api/answers/generate</code>.[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                        <!-- Answer Body Box -->[m
+[32m+[m[32m                        <div style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">[m
+[32m+[m[32m                            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">[m
+[32m+[m[32m                                Answer Content[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <div id="result-answer-text" style="font-size: 0.95rem; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap;"></div>[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                        <!-- Metadata & Verification Details -->[m
+[32m+[m[32m                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; font-size: 0.8125rem;">[m
+[32m+[m[32m                            <div>[m
+[32m+[m[32m                                <span style="color: var(--text-secondary);">Source Reference:</span>[m
+[32m+[m[32m                                <div id="result-source-reference" style="font-weight: 500; margin-top: 0.2rem;"></div>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <div>[m
+[32m+[m[32m                                <span style="color: var(--text-secondary);">Source Verification:</span>[m
+[32m+[m[32m                                <div id="result-source-verified" style="font-weight: 500; margin-top: 0.2rem;"></div>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <div>[m
+[32m+[m[32m                                <span style="color: var(--text-secondary);">Keywords Verification:</span>[m
+[32m+[m[32m                                <div id="result-keywords-verified" style="font-weight: 500; margin-top: 0.2rem;"></div>[m
+                             </div>[m
+[31m-                            <div style="font-size: 0.9375rem; color: var(--text-primary);">[m
+[31m-                                <div><strong>Target Topic:</strong> Normalization (3NF & BCNF)</div>[m
+[31m-                                <div><strong>Unit & Course:</strong> Unit 3 — Database Management Systems (CS-301)</div>[m
+[31m-                                <div><strong>Expected Response Type:</strong> 5 Marks Structured Exam Answer in English (Intermediate Level)</div>[m
+[31m-                                <div><strong>Grounding Source:</strong> Teacher-Uploaded Chapter 3 Notes & Syllabus Guidelines</div>[m
+[32m+[m[32m                            <div>[m
+[32m+[m[32m                                <span style="color: var(--text-secondary);">Teacher Approval Status:</span>[m
+[32m+[m[32m                                <div id="result-approval-status" style="font-weight: 500; margin-top: 0.2rem;"></div>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <div>[m
+[32m+[m[32m                                <span style="color: var(--text-secondary);">Answer ID:</span>[m
+[32m+[m[32m                                <div id="result-answer-id" style="font-weight: 500; margin-top: 0.2rem;"></div>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <div>[m
+[32m+[m[32m                                <span style="color: var(--text-secondary);">Format & Parameters:</span>[m
+[32m+[m[32m                                <div id="result-parameters" style="font-weight: 500; margin-top: 0.2rem;"></div>[m
+                             </div>[m
+                         </div>[m
+ [m
+[36m@@ -272,9 +312,95 @@[m
+                             <button type="button" class="btn btn-secondary" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">[m
+                                 ↺ Modify Parameters[m
+                             </button>[m
+[31m-                            <span style="font-size: 0.8125rem; color: var(--text-secondary);">[m
+[31m-                                Stage 1 Setup Complete • Waiting for Gemini & RAG Backend Integration[m
+[31m-                            </span>[m
+[32m+[m[32m                            <span id="result-footer-note" style="font-size: 0.8125rem; color: var(--text-secondary);"></span>[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                        <!-- Knowledge Check MCQ Trigger inside result container -->[m
+[32m+[m[32m                        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">[m
+[32m+[m[32m                            <div>[m
+[32m+[m[32m                                <h4 style="margin: 0 0 0.25rem 0;">Test Your Understanding</h4>[m
+[32m+[m[32m                                <p class="text-secondary" style="margin: 0; font-size: 0.85rem;">Take a quick 3-question MCQ assessment grounded in this topic to evaluate mastery and identify gaps.</p>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <button type="button" class="btn btn-primary" id="btn-start-mcq-from-result" onclick="startMcqAssessment()">[m
+[32m+[m[32m                                Start MCQ Assessment (3 Questions) 📝[m
+[32m+[m[32m                            </button>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m
+[32m+[m[32m                    <!-- STEP 4: MCQ Assessment & Gap Analysis Section -->[m
+[32m+[m[32m                    <div class="setup-card" id="assessment-card" style="display: none; border-left: 4px solid #4f46e5;">[m
+[32m+[m[32m                        <div class="setup-header">[m
+[32m+[m[32m                            <div class="step-num" style="background-color: #4f46e5;">4</div>[m
+[32m+[m[32m                            <div style="flex: 1;">[m
+[32m+[m[32m                                <h3 class="step-title" id="assessment-card-title">MCQ Knowledge Assessment</h3>[m
+[32m+[m[32m                                <p class="step-desc" id="assessment-card-desc">Evaluate your mastery and identify topics requiring revision.</p>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <span class="badge badge-primary" id="assessment-badge">3 Questions</span>[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                        <!-- Assessment Loading State -->[m
+[32m+[m[32m                        <div class="card loading-box" id="assessment-loading" style="display: none; margin-bottom: 1rem;">[m
+[32m+[m[32m                            <div class="spinner"></div>[m
+[32m+[m[32m                            <h4 style="margin-bottom: 0.25rem;">Generating Topic MCQs...</h4>[m
+[32m+[m[32m                            <p class="text-secondary" style="font-size: 0.875rem;">[m
+[32m+[m[32m                                Retrieving syllabus-grounded questions from backend...[m
+[32m+[m[32m                            </p>[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                        <!-- Assessment Error State -->[m
+[32m+[m[32m                        <div class="card" id="assessment-error-box" style="display: none; border-left: 4px solid var(--danger-color); background-color: #fef2f2; margin-bottom: 1rem;">[m
+[32m+[m[32m                            <div class="flex justify-between items-center mb-1">[m
+[32m+[m[32m                                <h5 style="margin:0; color: var(--danger-color);">⚠️ Assessment Error</h5>[m
+[32m+[m[32m                                <span class="badge badge-danger">Error</span>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <p id="assessment-error-message" style="color: var(--danger-color); font-size: 0.875rem; margin: 0;"></p>[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                        <!-- Assessment Quiz Form -->[m
+[32m+[m[32m                        <div id="assessment-quiz-container" style="display: none;">[m
+[32m+[m[32m                            <div id="assessment-questions-list" style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1.5rem;">[m
+[32m+[m[32m                                <!-- Dynamic questions rendered here -->[m
+[32m+[m[32m                            </div>[m
+[32m+[m
+[32m+[m[32m                            <!-- Unanswered Questions Alert -->[m
+[32m+[m[32m                            <div id="assessment-unanswered-alert" style="display: none; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.875rem; color: #92400e;">[m
+[32m+[m[32m                                ⚠️ Please select an answer for all questions before submitting.[m
+[32m+[m[32m                            </div>[m
+[32m+[m
+[32m+[m[32m                            <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 0.75rem;">[m
+[32m+[m[32m                                <button type="button" class="btn btn-secondary" onclick="cancelAssessment()">[m
+[32m+[m[32m                                    ✕ Close Assessment[m
+[32m+[m[32m                                </button>[m
+[32m+[m[32m                                <button type="button" class="btn btn-primary" id="btn-submit-mcq" onclick="submitAssessment()">[m
+[32m+[m[32m                                    Submit Assessment 📤[m
+[32m+[m[32m                                </button>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                        <!-- Assessment Results Section -->[m
+[32m+[m[32m                        <div id="assessment-result-container" style="display: none;">[m
+[32m+[m[32m                            <!-- Score Summary Card -->[m
+[32m+[m[32m                            <div id="assessment-score-summary" style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">[m
+[32m+[m[32m                                <!-- Score, percentage, weak topic alert, recommendation banner -->[m
+[32m+[m[32m                            </div>[m
+[32m+[m
+[32m+[m[32m                            <!-- Detailed Review -->[m
+[32m+[m[32m                            <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.75rem;">[m
+[32m+[m[32m                                Question-by-Question Review[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                            <div id="assessment-review-list" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">[m
+[32m+[m[32m                                <!-- Detailed per-question results -->[m
+[32m+[m[32m                            </div>[m
+[32m+[m
+[32m+[m[32m                            <!-- Action buttons: Revise Topic or Retake Assessment -->[m
+[32m+[m[32m                            <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 0.75rem;">[m
+[32m+[m[32m                                <button type="button" class="btn btn-secondary" onclick="startMcqAssessment()">[m
+[32m+[m[32m                                    ↺ Retake Assessment[m
+[32m+[m[32m                                </button>[m
+[32m+[m[32m                                <div id="revision-action-container">[m
+[32m+[m[32m                                    <!-- Populated dynamically with Revise Topic button if weak -->[m
+[32m+[m[32m                                </div>[m
+[32m+[m[32m                            </div>[m
+                         </div>[m
+                     </div>[m
+ [m
+[1mdiff --git a/teacher/course.html b/teacher/course.html[m
+[1mindex 6288419..2e76c23 100644[m
+[1m--- a/teacher/course.html[m
+[1m+++ b/teacher/course.html[m
+[36m@@ -42,7 +42,7 @@[m
+                             </div>[m
+                             <div class="form-group mb-0">[m
+                                 <label class="form-label">Course Description</label>[m
+[31m-                                <textarea class="form-control" rows="2" placeholder="Brief description of the course..."></textarea>[m
+[32m+[m[32m                                <textarea id="course-description" class="form-control" rows="2" placeholder="Brief description of the course..."></textarea>[m
+                             </div>[m
+                         </div>[m
+                     </div>[m
+[36m@@ -61,7 +61,7 @@[m
+ [m
+                 <div class="flex" style="justify-content: flex-end; gap: 1rem; margin-top: 1rem;">[m
+                     <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Cancel</button>[m
+[31m-                    <button class="btn btn-success" onclick="saveCourse()">Save Course Structure</button>[m
+[32m+[m[32m                    <button class="btn btn-success" id="save-course-btn" onclick="saveCourse()">Save Course Structure</button>[m
+                 </div>[m
+ [m
+             </div>[m
+[1mdiff --git a/teacher/dashboard.html b/teacher/dashboard.html[m
+[1mindex 0d71507..a325b09 100644[m
+[1m--- a/teacher/dashboard.html[m
+[1m+++ b/teacher/dashboard.html[m
+[36m@@ -44,21 +44,21 @@[m
+                         <div class="stat-icon blue">📚</div>[m
+                         <div class="stat-details">[m
+                             <h4>Total Courses</h4>[m
+[31m-                            <p>4</p>[m
+[32m+[m[32m                            <p id="stat-total-courses">...</p>[m
+                         </div>[m
+                     </div>[m
+                     <div class="card stat-card">[m
+                         <div class="stat-icon green">📁</div>[m
+                         <div class="stat-details">[m
+                             <h4>Uploaded Materials</h4>[m
+[31m-                            <p>12</p>[m
+[32m+[m[32m                            <p id="stat-total-materials">...</p>[m
+                         </div>[m
+                     </div>[m
+                     <div class="card stat-card">[m
+                         <div class="stat-icon orange">📝</div>[m
+                         <div class="stat-details">[m
+                             <h4>Pending Reviews</h4>[m
+[31m-                            <p>8</p>[m
+[32m+[m[32m                            <p id="stat-pending-reviews">...</p>[m
+                         </div>[m
+                     </div>[m
+                     <div class="card stat-card">[m
+[36m@@ -128,5 +128,6 @@[m
+     </div>[m
+ [m
+     <script src="../js/common.js"></script>[m
+[32m+[m[32m    <script src="../js/teacher.js"></script>[m
+ </body>[m
+ </html>[m
+[1mdiff --git a/teacher/materials.html b/teacher/materials.html[m
+[1mindex bb9718e..736375e 100644[m
+[1m--- a/teacher/materials.html[m
+[1m+++ b/teacher/materials.html[m
+[36m@@ -39,27 +39,21 @@[m
+                     [m
+                     <div class="flex gap-4" style="flex-wrap: wrap;">[m
+                         <div class="form-group" style="flex: 1; min-width: 200px;">[m
+[31m-                            <label class="form-label">Course</label>[m
+[32m+[m[32m                            <label class="form-label">Course <span style="color: var(--danger-color);">*</span></label>[m
+                             <select class="form-control" id="course-select">[m
+[31m-                                <option value="">Select Course...</option>[m
+[31m-                                <option value="cs101">Introduction to Computer Science</option>[m
+[31m-                                <option value="ds200">Data Structures</option>[m
+[32m+[m[32m                                <option value="">Loading courses from database...</option>[m
+                             </select>[m
+                         </div>[m
+                         <div class="form-group" style="flex: 1; min-width: 200px;">[m
+[31m-                            <label class="form-label">Unit</label>[m
+[31m-                            <select class="form-control" id="unit-select">[m
+[31m-                                <option value="">Select Unit...</option>[m
+[31m-                                <option value="u1">Unit 1: Fundamentals</option>[m
+[31m-                                <option value="u2">Unit 2: Advanced Topics</option>[m
+[32m+[m[32m                            <label class="form-label">Unit <span style="font-size:0.75rem; color:var(--text-secondary);">(Optional Context)</span></label>[m
+[32m+[m[32m                            <select class="form-control" id="unit-select" disabled>[m
+[32m+[m[32m                                <option value="">Select Course first...</option>[m
+                             </select>[m
+                         </div>[m
+                         <div class="form-group" style="flex: 1; min-width: 200px;">[m
+[31m-                            <label class="form-label">Topic</label>[m
+[31m-                            <select class="form-control" id="topic-select">[m
+[31m-                                <option value="">Select Topic...</option>[m
+[31m-                                <option value="t1">Topic 1: Introduction</option>[m
+[31m-                                <option value="t2">Topic 2: Core Concepts</option>[m
+[32m+[m[32m                            <label class="form-label">Topic <span style="font-size:0.75rem; color:var(--text-secondary);">(Optional Context)</span></label>[m
+[32m+[m[32m                            <select class="form-control" id="topic-select" disabled>[m
+[32m+[m[32m                                <option value="">Select Unit first...</option>[m
+                             </select>[m
+                         </div>[m
+                     </div>[m
+[36m@@ -80,30 +74,7 @@[m
+                 <div class="card">[m
+                     <h3>Recent Uploads</h3>[m
+                     <div class="material-list" id="material-list">[m
+[31m-                        <!-- Simulated uploads will appear here -->[m
+[31m-                        [m
+[31m-                        <!-- Mock historical upload -->[m
+[31m-                        <div class="material-item">[m
+[31m-                            <div class="material-info">[m
+[31m-                                <span class="material-icon">📄</span>[m
+[31m-                                <div>[m
+[31m-                                    <div style="font-weight:500;">Chapter_1_Notes.pdf</div>[m
+[31m-                                    <div style="font-size:0.75rem;color:var(--text-secondary);">Course: Data Structures > Unit 1</div>[m
+[31m-                                </div>[m
+[31m-                            </div>[m
+[31m-                            <span class="badge badge-success">Processed</span>[m
+[31m-                        </div>[m
+[31m-[m
+[31m-                        <div class="material-item">[m
+[31m-                            <div class="material-info">[m
+[31m-                                <span class="material-icon">📄</span>[m
+[31m-                                <div>[m
+[31m-                                    <div style="font-weight:500;">Syllabus_draft.pdf</div>[m
+[31m-                                    <div style="font-size:0.75rem;color:var(--text-secondary);">Course: Intro to CS > Unit 1</div>[m
+[31m-                                </div>[m
+[31m-                            </div>[m
+[31m-                            <span class="badge badge-danger">Failed</span>[m
+[31m-                        </div>[m
+[32m+[m[32m                        <div class="text-secondary" style="padding: 1rem; text-align: center;">Loading materials...</div>[m
+                     </div>[m
+                 </div>[m
+ [m
+[1mdiff --git a/teacher/review.html b/teacher/review.html[m
+[1mindex b118b18..1b02a1b 100644[m
+[1m--- a/teacher/review.html[m
+[1m+++ b/teacher/review.html[m
+[36m@@ -29,66 +29,17 @@[m
+         <main class="main-content">[m
+             <header class="topbar">[m
+                 <h2 style="margin:0; font-size:1.25rem;">Review AI-Generated Content</h2>[m
+[31m-                <span class="badge badge-warning">3 Pending Reviews</span>[m
+[32m+[m[32m                <span class="badge badge-warning" id="pending-reviews-badge">Loading...</span>[m
+             </header>[m
+ [m
+             <div class="content-wrapper">[m
+                 [m
+                 <p class="text-secondary mb-6">Approve, reject, or edit answers generated by the AI before they are published to students.</p>[m
+ [m
+[31m-                <!-- Review Card 1 -->[m
+[31m-                <div class="card review-card" id="review-1">[m
+[31m-                    <div class="review-header">[m
+[31m-                        <span><strong>Course:</strong> Data Structures > Unit 1 > Array Basics</span>[m
+[31m-                        <span class="badge badge-warning" id="status-1">Pending</span>[m
+[31m-                    </div>[m
+[31m-                    [m
+[31m-                    <div class="review-question">[m
+[31m-                        Q: Explain the time complexity of accessing an element in an array by its index.[m
+[31m-                    </div>[m
+[31m-                    [m
+[31m-                    <div class="review-answer" id="answer-text-1">[m
+[31m-                        The time complexity of accessing an element in an array by its index is O(1) or constant time. This is because arrays are allocated in contiguous memory blocks. The memory address of any element can be calculated directly using the base address of the array, the index, and the size of a single element.[m
+[31m-                    </div>[m
+[31m-                    [m
+[31m-                    <div class="flex gap-4 mb-4" style="font-size: 0.875rem; color: var(--text-secondary);">[m
+[31m-                        <div><strong>Marks:</strong> 5</div>[m
+[31m-                        <div><strong>Difficulty:</strong> Medium</div>[m
+[31m-                        <div><strong>Keywords:</strong> O(1), Contiguous Memory, Base Address</div>[m
+[31m-                    </div>[m
+[31m-[m
+[31m-                    <div class="review-actions" id="actions-1">[m
+[31m-                        <button class="btn btn-secondary" id="edit-btn-1" onclick="toggleEditAnswer(1)">Edit Answer</button>[m
+[31m-                        <button class="btn btn-danger" onclick="rejectAnswer(1)">Reject</button>[m
+[31m-                        <button class="btn btn-success" onclick="approveAnswer(1)">Approve</button>[m
+[31m-                    </div>[m
+[31m-                </div>[m
+[31m-[m
+[31m-                <!-- Review Card 2 -->[m
+[31m-                <div class="card review-card" id="review-2">[m
+[31m-                    <div class="review-header">[m
+[31m-                        <span><strong>Course:</strong> Intro to CS > Unit 2 > Memory</span>[m
+[31m-                        <span class="badge badge-warning" id="status-2">Pending</span>[m
+[31m-                    </div>[m
+[31m-                    [m
+[31m-                    <div class="review-question">[m
+[31m-                        Q: What is the difference between RAM and ROM?[m
+[31m-                    </div>[m
+[31m-                    [m
+[31m-                    <div class="review-answer" id="answer-text-2">[m
+[31m-                        RAM (Random Access Memory) is volatile memory used for temporary storage while the computer is running. Data is lost when power is off. ROM (Read-Only Memory) is non-volatile memory used to store firmware. Data is retained even without power.[m
+[31m-                    </div>[m
+[31m-                    [m
+[31m-                    <div class="flex gap-4 mb-4" style="font-size: 0.875rem; color: var(--text-secondary);">[m
+[31m-                        <div><strong>Marks:</strong> 10</div>[m
+[31m-                        <div><strong>Difficulty:</strong> Easy</div>[m
+[31m-                        <div><strong>Keywords:</strong> Volatile, Non-volatile, Temporary, Firmware</div>[m
+[31m-                    </div>[m
+[31m-[m
+[31m-                    <div class="review-actions" id="actions-2">[m
+[31m-                        <button class="btn btn-secondary" id="edit-btn-2" onclick="toggleEditAnswer(2)">Edit Answer</button>[m
+[31m-                        <button class="btn btn-danger" onclick="rejectAnswer(2)">Reject</button>[m
+[31m-                        <button class="btn btn-success" onclick="approveAnswer(2)">Approve</button>[m
+[32m+[m[32m                <!-- Dynamic container populated from GET /api/answers?approval_status=pending -->[m
+[32m+[m[32m                <div id="review-cards-container">[m
+[32m+[m[32m                    <div class="card text-center" style="padding: 2rem; color: var(--text-secondary);">[m
+[32m+[m[32m                        <p>Loading pending reviews from database...</p>[m
+                     </div>[m
+                 </div>[m
+ [m
+[1mdiff --git a/tests/test_stage2.py b/tests/test_stage2.py[m
+[1mindex 222a5ec..0eff1f2 100644[m
+[1m--- a/tests/test_stage2.py[m
+[1m+++ b/tests/test_stage2.py[m
+[36m@@ -106,10 +106,14 @@[m [mclass Stage2MaterialsAPITestCase(unittest.TestCase):[m
+         self.assertEqual(proc_res.status_code, 200)[m
+         proc_data = proc_res.get_json()[m
+         self.assertEqual(proc_data["material_id"], material_id)[m
+[31m-        # Because Ankit's AI document_processor module is not yet present,[m
+[31m-        # status must not be fake-completed, but accurately reported as queued/pending without fabricating.[m
+[31m-        self.assertEqual(proc_data["processing_status"], "pending")[m
+[31m-        self.assertIn("not implemented yet", proc_data["message"])[m
+[32m+[m[32m        # When AI document_processor is implemented, status is 'processed'; if absent, remains 'pending'[m
+[32m+[m[32m        if "not implemented yet" in proc_data.get("message", ""):[m
+[32m+[m[32m            self.assertEqual(proc_data["processing_status"], "pending")[m
+[32m+[m[32m            self.assertIn("not implemented yet", proc_data["message"])[m
+[32m+[m[32m        else:[m
+[32m+[m[32m            self.assertEqual(proc_data["processing_status"], "processed")[m
+[32m+[m[32m            self.assertIn("processed successfully", proc_data["message"])[m
+[32m+[m
+ [m
+         # Test non-existent material process[m
+         proc_404 = self.client.post("/api/materials/9999/process")[m
+[1mdiff --git a/tests/test_stage3_4.py b/tests/test_stage3_4.py[m
+[1mindex a8fc92c..f9c8031 100644[m
+[1m--- a/tests/test_stage3_4.py[m
+[1m+++ b/tests/test_stage3_4.py[m
+[36m@@ -147,6 +147,50 @@[m [mclass Stage3And4APITestCase(unittest.TestCase):[m
+         self.assertEqual(self.client.post("/api/answers/9999/approve").status_code, 404)[m
+         self.assertEqual(self.client.post("/api/answers/9999/reject").status_code, 404)[m
+ [m
+[32m+[m[32m    def test_get_answers_list(self):[m
+[32m+[m[32m        # Initial answers list empty[m
+[32m+[m[32m        empty_res = self.client.get("/api/answers")[m
+[32m+[m[32m        self.assertEqual(empty_res.status_code, 200)[m
+[32m+[m[32m        self.assertEqual(empty_res.get_json(), [])[m
+[32m+[m
+[32m+[m[32m        # Generate two answers[m
+[32m+[m[32m        res1 = self.client.post("/api/answers/generate", json={[m
+[32m+[m[32m            "course_id": self.course_id, "topic_id": self.topic_id,[m
+[32m+[m[32m            "level": "intermediate", "language": "english", "marks": 5, "mode": "exam"[m
+[32m+[m[32m        })[m
+[32m+[m[32m        ans1_id = res1.get_json()["answer_id"][m
+[32m+[m
+[32m+[m[32m        res2 = self.client.post("/api/answers/generate", json={[m
+[32m+[m[32m            "course_id": self.course_id, "topic_id": self.topic_id,[m
+[32m+[m[32m            "level": "basic", "language": "english", "marks": 2, "mode": "exam"[m
+[32m+[m[32m        })[m
+[32m+[m[32m        ans2_id = res2.get_json()["answer_id"][m
+[32m+[m
+[32m+[m[32m        # Approve answer 2[m
+[32m+[m[32m        self.client.post(f"/api/answers/{ans2_id}/approve")[m
+[32m+[m
+[32m+[m[32m        # Get all answers[m
+[32m+[m[32m        all_res = self.client.get("/api/answers")[m
+[32m+[m[32m        self.assertEqual(all_res.status_code, 200)[m
+[32m+[m[32m        all_answers = all_res.get_json()[m
+[32m+[m[32m        self.assertEqual(len(all_answers), 2)[m
+[32m+[m
+[32m+[m[32m        # Filter by pending[m
+[32m+[m[32m        pending_res = self.client.get("/api/answers?approval_status=pending")[m
+[32m+[m[32m        self.assertEqual(pending_res.status_code, 200)[m
+[32m+[m[32m        pending_list = pending_res.get_json()[m
+[32m+[m[32m        self.assertEqual(len(pending_list), 1)[m
+[32m+[m[32m        self.assertEqual(pending_list[0]["answer_id"], ans1_id)[m
+[32m+[m[32m        self.assertEqual(pending_list[0]["approval_status"], "pending")[m
+[32m+[m
+[32m+[m[32m        # Filter by approved[m
+[32m+[m[32m        approved_res = self.client.get("/api/answers?approval_status=approved")[m
+[32m+[m[32m        self.assertEqual(approved_res.status_code, 200)[m
+[32m+[m[32m        approved_list = approved_res.get_json()[m
+[32m+[m[32m        self.assertEqual(len(approved_list), 1)[m
+[32m+[m[32m        self.assertEqual(approved_list[0]["answer_id"], ans2_id)[m
+[32m+[m[32m        self.assertEqual(approved_list[0]["approval_status"], "approved")[m
+[32m+[m
+ [m
+ if __name__ == "__main__":[m
+     unittest.main()[m

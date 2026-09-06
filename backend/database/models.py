@@ -252,6 +252,35 @@ class AnswerModel:
         return d
 
     @staticmethod
+    def get_all(approval_status=None):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if approval_status is not None:
+            cursor.execute("""
+                SELECT answer_id, topic_id, level, language, marks, mode, answer_text,
+                       source_reference, source_verified, keywords_verified, approval_status
+                FROM answers
+                WHERE approval_status = ?
+                ORDER BY answer_id DESC
+            """, (str(approval_status).strip().lower(),))
+        else:
+            cursor.execute("""
+                SELECT answer_id, topic_id, level, language, marks, mode, answer_text,
+                       source_reference, source_verified, keywords_verified, approval_status
+                FROM answers
+                ORDER BY answer_id DESC
+            """)
+        rows = cursor.fetchall()
+        conn.close()
+        results = []
+        for row in rows:
+            d = dict(row)
+            d["source_verified"] = bool(d["source_verified"])
+            d["keywords_verified"] = bool(d["keywords_verified"])
+            results.append(d)
+        return results
+
+    @staticmethod
     def update_approval(answer_id, approval_status):
         conn = get_db_connection()
         cursor = conn.cursor()

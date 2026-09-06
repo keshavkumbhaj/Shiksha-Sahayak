@@ -39,27 +39,21 @@
                     
                     <div class="flex gap-4" style="flex-wrap: wrap;">
                         <div class="form-group" style="flex: 1; min-width: 200px;">
-                            <label class="form-label">Course</label>
+                            <label class="form-label">Course <span style="color: var(--danger-color);">*</span></label>
                             <select class="form-control" id="course-select">
-                                <option value="">Select Course...</option>
-                                <option value="cs101">Introduction to Computer Science</option>
-                                <option value="ds200">Data Structures</option>
+                                <option value="">Loading courses from database...</option>
                             </select>
                         </div>
                         <div class="form-group" style="flex: 1; min-width: 200px;">
-                            <label class="form-label">Unit</label>
-                            <select class="form-control" id="unit-select">
-                                <option value="">Select Unit...</option>
-                                <option value="u1">Unit 1: Fundamentals</option>
-                                <option value="u2">Unit 2: Advanced Topics</option>
+                            <label class="form-label">Unit <span style="font-size:0.75rem; color:var(--text-secondary);">(Optional Context)</span></label>
+                            <select class="form-control" id="unit-select" disabled>
+                                <option value="">Select Course first...</option>
                             </select>
                         </div>
                         <div class="form-group" style="flex: 1; min-width: 200px;">
-                            <label class="form-label">Topic</label>
-                            <select class="form-control" id="topic-select">
-                                <option value="">Select Topic...</option>
-                                <option value="t1">Topic 1: Introduction</option>
-                                <option value="t2">Topic 2: Core Concepts</option>
+                            <label class="form-label">Topic <span style="font-size:0.75rem; color:var(--text-secondary);">(Optional Context)</span></label>
+                            <select class="form-control" id="topic-select" disabled>
+                                <option value="">Select Unit first...</option>
                             </select>
                         </div>
                     </div>
@@ -80,30 +74,7 @@
                 <div class="card">
                     <h3>Recent Uploads</h3>
                     <div class="material-list" id="material-list">
-                        <!-- Simulated uploads will appear here -->
-                        
-                        <!-- Mock historical upload -->
-                        <div class="material-item">
-                            <div class="material-info">
-                                <span class="material-icon">📄</span>
-                                <div>
-                                    <div style="font-weight:500;">Chapter_1_Notes.pdf</div>
-                                    <div style="font-size:0.75rem;color:var(--text-secondary);">Course: Data Structures > Unit 1</div>
-                                </div>
-                            </div>
-                            <span class="badge badge-success">Processed</span>
-                        </div>
-
-                        <div class="material-item">
-                            <div class="material-info">
-                                <span class="material-icon">📄</span>
-                                <div>
-                                    <div style="font-weight:500;">Syllabus_draft.pdf</div>
-                                    <div style="font-size:0.75rem;color:var(--text-secondary);">Course: Intro to CS > Unit 1</div>
-                                </div>
-                            </div>
-                            <span class="badge badge-danger">Failed</span>
-                        </div>
+                        <div class="text-secondary" style="padding: 1rem; text-align: center;">Loading materials...</div>
                     </div>
                 </div>
 

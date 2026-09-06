@@ -2,6 +2,24 @@
  * Common shared JavaScript functionality
  */
 
+// Centralized API Base URL
+const API_BASE_URL = window.location.protocol === 'file:'
+    ? 'http://localhost:5000/api'
+    : '/api';
+
+/**
+ * Sanitize string to prevent HTML injection
+ */
+function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Inject Toast Container if not present
     if (!document.getElementById('toast-container')) {
@@ -24,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Show a toast notification
  * @param {string} message 
- * @param {string} type 'success', 'error', 'info'
+ * @param {string} type 'success', 'error', 'info', 'warning'
  */
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -37,10 +55,11 @@ function showToast(message, type = 'info') {
     let icon = 'ℹ️';
     if (type === 'success') icon = '✅';
     if (type === 'error') icon = '❌';
+    if (type === 'warning') icon = '⚠️';
 
     toast.innerHTML = `
         <span class="toast-icon">${icon}</span>
-        <span class="toast-message">${message}</span>
+        <span class="toast-message">${escapeHTML(message)}</span>
     `;
 
     container.appendChild(toast);

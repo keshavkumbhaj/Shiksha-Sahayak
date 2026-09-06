@@ -156,6 +156,14 @@ def generate_answer():
     return jsonify(format_answer_response(created_answer)), 200
 
 
+@answers_bp.route("/answers", methods=["GET"])
+def get_answers():
+    """Retrieve answers, optionally filtered by approval_status (e.g. ?approval_status=pending)."""
+    approval_status = request.args.get("approval_status")
+    answers = AnswerModel.get_all(approval_status=approval_status)
+    return jsonify([format_answer_response(a) for a in answers]), 200
+
+
 @answers_bp.route("/answers/<int:answer_id>", methods=["GET"])
 def get_answer(answer_id):
     """Retrieve an answer by its ID."""

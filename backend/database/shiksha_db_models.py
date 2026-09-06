@@ -3,7 +3,7 @@ Shiksha Sahayak Database Package (Tanu's Responsibility)
 Exposes database initialization, connection handling, and all entity models.
 """
 
-from backend.database.db import (
+from backend.database.shiksha_db_core import (
     get_db_path,
     get_db_connection,
     get_db_context,

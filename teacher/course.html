@@ -42,7 +42,7 @@
                             </div>
                             <div class="form-group mb-0">
                                 <label class="form-label">Course Description</label>
-                                <textarea class="form-control" rows="2" placeholder="Brief description of the course..."></textarea>
+                                <textarea id="course-description" class="form-control" rows="2" placeholder="Brief description of the course..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -61,7 +61,7 @@
 
                 <div class="flex" style="justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
                     <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Cancel</button>
-                    <button class="btn btn-success" onclick="saveCourse()">Save Course Structure</button>
+                    <button class="btn btn-success" id="save-course-btn" onclick="saveCourse()">Save Course Structure</button>
                 </div>
 
             </div>

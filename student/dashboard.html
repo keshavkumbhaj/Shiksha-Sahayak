@@ -45,7 +45,7 @@
                     <h2>Welcome back, Keshav! 🚀</h2>
                     <p>Syllabus-aligned AI learning grounded in your teacher's verified academic materials. Select topics, customize your exam marks, and write answers with confidence.</p>
                     <div class="flex items-center gap-2" style="flex-wrap: wrap;">
-                        <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn" style="background-color: white; color: var(--primary-color); font-weight: 600;">
+                        <a href="learning.html?course_id=1&unit_id=1&topic_id=1&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn" style="background-color: white; color: var(--primary-color); font-weight: 600;">
                             ⚡ Launch Primary Demo: Normalization (5 Marks, Exam Answer)
                         </a>
                         <a href="learning.html" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">
@@ -128,7 +128,7 @@
                             </div>
 
                             <div class="flex gap-2" style="margin-top: 0.5rem;">
-                                <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-primary w-full">
+                                <a href="learning.html?course_id=1&unit_id=1&topic_id=1&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-primary w-full">
                                     Continue: Normalization (5M)
                                 </a>
                             </div>
@@ -225,7 +225,7 @@
                                     <span style="font-weight: 500; color: var(--primary-color);">Exam Answer</span>
                                 </td>
                                 <td style="padding: 0.85rem 0.5rem;">
-                                    <a href="learning.html?course=dbms&unit=u3&topic=t_norm&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                                    <a href="learning.html?course_id=1&unit_id=1&topic_id=1&level=intermediate&lang=english&marks=5&mode=exam_answer" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
                                         Resume Session ↻
                                     </a>
                                 </td>
@@ -251,6 +251,26 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Flagged Weak Topics & Targeted Revision Section -->
+                <div class="card" id="dashboard-weak-topics-card" style="margin-top: 1.5rem;">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <h3 style="margin:0;">⚠️ Flagged Weak Topics</h3>
+                            <span class="badge badge-warning" id="weak-topics-count">Loading...</span>
+                        </div>
+                        <span class="text-secondary" style="font-size:0.875rem;">MCQ Performance &lt; 60%</span>
+                    </div>
+                    <p class="text-secondary" style="font-size:0.875rem; margin-bottom: 1rem;">
+                        Topics identified as needing targeted revision based on your recent assessment performance. Click Revise Topic to review grounded explanations.
+                    </p>
+
+                    <div id="dashboard-weak-topics-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div class="text-secondary" style="padding: 1rem 0; font-size: 0.875rem;">
+                            Loading identified weak topics from database...
+                        </div>
+                    </div>
                 </div>
 
             </div>

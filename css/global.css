@@ -287,6 +287,8 @@ select.form-control {
 
 .toast.success { border-left-color: var(--success-color); }
 .toast.error { border-left-color: var(--danger-color); }
+.toast.warning { border-left-color: var(--warning-color); }
+.toast.info { border-left-color: var(--primary-color); }
 
 @keyframes slideIn {
     from { transform: translateX(100%); opacity: 0; }

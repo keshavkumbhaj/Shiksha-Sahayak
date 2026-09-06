@@ -425,3 +425,82 @@
         display: none;
     }
 }
+
+/* MCQ Assessment & Weak Topic Styles */
+.mcq-question-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+}
+
+.mcq-question-text {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.85rem;
+    line-height: 1.5;
+}
+
+.mcq-options-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mcq-option-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.875rem;
+    background-color: #ffffff;
+}
+
+.mcq-option-label:hover {
+    border-color: var(--primary-color);
+    background-color: #f8fafc;
+}
+
+.mcq-option-label input[type="radio"] {
+    margin: 0;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+.mcq-review-card {
+    background-color: var(--surface-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border-color);
+}
+
+.mcq-review-card.correct {
+    background-color: #f0fdf4;
+    border-color: #86efac;
+}
+
+.mcq-review-card.incorrect {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+}
+
+.weak-topic-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.weak-topic-item:last-child {
+    border-bottom: none;
+}

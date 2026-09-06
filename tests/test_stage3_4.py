@@ -147,6 +147,50 @@ class Stage3And4APITestCase(unittest.TestCase):
         self.assertEqual(self.client.post("/api/answers/9999/approve").status_code, 404)
         self.assertEqual(self.client.post("/api/answers/9999/reject").status_code, 404)
 
+    def test_get_answers_list(self):
+        # Initial answers list empty
+        empty_res = self.client.get("/api/answers")
+        self.assertEqual(empty_res.status_code, 200)
+        self.assertEqual(empty_res.get_json(), [])
+
+        # Generate two answers
+        res1 = self.client.post("/api/answers/generate", json={
+            "course_id": self.course_id, "topic_id": self.topic_id,
+            "level": "intermediate", "language": "english", "marks": 5, "mode": "exam"
+        })
+        ans1_id = res1.get_json()["answer_id"]
+
+        res2 = self.client.post("/api/answers/generate", json={
+            "course_id": self.course_id, "topic_id": self.topic_id,
+            "level": "basic", "language": "english", "marks": 2, "mode": "exam"
+        })
+        ans2_id = res2.get_json()["answer_id"]
+
+        # Approve answer 2
+        self.client.post(f"/api/answers/{ans2_id}/approve")
+
+        # Get all answers
+        all_res = self.client.get("/api/answers")
+        self.assertEqual(all_res.status_code, 200)
+        all_answers = all_res.get_json()
+        self.assertEqual(len(all_answers), 2)
+
+        # Filter by pending
+        pending_res = self.client.get("/api/answers?approval_status=pending")
+        self.assertEqual(pending_res.status_code, 200)
+        pending_list = pending_res.get_json()
+        self.assertEqual(len(pending_list), 1)
+        self.assertEqual(pending_list[0]["answer_id"], ans1_id)
+        self.assertEqual(pending_list[0]["approval_status"], "pending")
+
+        # Filter by approved
+        approved_res = self.client.get("/api/answers?approval_status=approved")
+        self.assertEqual(approved_res.status_code, 200)
+        approved_list = approved_res.get_json()
+        self.assertEqual(len(approved_list), 1)
+        self.assertEqual(approved_list[0]["answer_id"], ans2_id)
+        self.assertEqual(approved_list[0]["approval_status"], "approved")
+
 
 if __name__ == "__main__":
     unittest.main()

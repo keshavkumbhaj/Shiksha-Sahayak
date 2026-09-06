@@ -229,42 +229,82 @@
                             </div>
                         </div>
 
-                        <div class="flex" style="justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                        <div class="flex" style="justify-content: flex-end; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
                             <a href="dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
-                            <button type="button" class="btn btn-primary" id="btn-generate-prep" onclick="prepareGeneration()" disabled>
+                            <button type="button" class="btn btn-secondary" id="btn-topic-assessment" onclick="startMcqAssessment()" disabled>
+                                Practice MCQs (3Q) 📝
+                            </button>
+                            <button type="button" class="btn btn-primary" id="btn-generate-prep" onclick="generateAnswer()" disabled>
                                 Ready to Generate Answer 🚀
                             </button>
                         </div>
                     </div>
 
-                    <!-- Simulated Loading State (When preparing generation) -->
+                    <!-- Loading State (When requesting answer generation) -->
                     <div class="card loading-box" id="generation-loading">
                         <div class="spinner"></div>
-                        <h4 style="margin-bottom: 0.25rem;">Preparing Generation Pipeline...</h4>
+                        <h4 style="margin-bottom: 0.25rem;">Generating Grounded Answer...</h4>
                         <p class="text-secondary" style="font-size: 0.875rem;">
-                            Retrieving approved study materials for selected topic and configuring prompt context...
+                            Contacting backend answer generation service and grounding against syllabus...
                         </p>
                     </div>
 
-                    <!-- Pipeline Preview Box (Where AI Answer will hook in) -->
-                    <div class="card" id="generation-pipeline-preview" style="display: none; border-left: 4px solid var(--primary-color);">
+                    <!-- API Error State Container -->
+                    <div class="card" id="generation-error-box" style="display: none; border-left: 4px solid var(--danger-color); background-color: #fef2f2;">
                         <div class="flex justify-between items-center mb-2">
-                            <h3 style="margin:0;">✨ Generation Pipeline Initialized</h3>
-                            <span class="badge badge-success">Ready for Gemini / RAG Hookup</span>
+                            <h4 style="margin:0; color: var(--danger-color);">⚠️ Generation Request Failed</h4>
+                            <span class="badge badge-danger">API Error</span>
                         </div>
-                        <p class="text-secondary" style="font-size: 0.9rem;">
-                            The learning configuration has been validated. In the next stage, the backend RAG module will query teacher-approved PDFs and stream the syllabus-aligned response into this container.
-                        </p>
+                        <p id="generation-error-message" style="color: var(--danger-color); font-size: 0.9rem; margin: 0;"></p>
+                    </div>
 
-                        <div style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1rem;">
-                            <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">
-                                Active Grounding Context
+                    <!-- Generation Result / Response Container -->
+                    <div class="card" id="generation-result-container" style="display: none; border-left: 4px solid var(--primary-color);">
+                        <div class="flex justify-between items-center mb-3" style="flex-wrap: wrap; gap: 0.5rem;">
+                            <h3 style="margin:0;" id="result-heading">Structured Answer</h3>
+                            <div class="flex items-center gap-2" id="result-badges">
+                                <!-- Populated dynamically: status, verification, approval -->
                             </div>
-                            <div style="font-size: 0.9375rem; color: var(--text-primary);">
-                                <div><strong>Target Topic:</strong> Normalization (3NF & BCNF)</div>
-                                <div><strong>Unit & Course:</strong> Unit 3 — Database Management Systems (CS-301)</div>
-                                <div><strong>Expected Response Type:</strong> 5 Marks Structured Exam Answer in English (Intermediate Level)</div>
-                                <div><strong>Grounding Source:</strong> Teacher-Uploaded Chapter 3 Notes & Syllabus Guidelines</div>
+                        </div>
+
+                        <!-- Notice banner if AI pipeline is pending -->
+                        <div id="ai-pending-banner" style="display: none; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1rem; font-size: 0.875rem; color: #92400e;">
+                            <strong>AI Pipeline Pending:</strong> Real AI generation awaits integration of Ankit's AI/RAG module (<code>ai.generator</code>). Displaying the response returned by <code>POST /api/answers/generate</code>.
+                        </div>
+
+                        <!-- Answer Body Box -->
+                        <div style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+                            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">
+                                Answer Content
+                            </div>
+                            <div id="result-answer-text" style="font-size: 0.95rem; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap;"></div>
+                        </div>
+
+                        <!-- Metadata & Verification Details -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; font-size: 0.8125rem;">
+                            <div>
+                                <span style="color: var(--text-secondary);">Source Reference:</span>
+                                <div id="result-source-reference" style="font-weight: 500; margin-top: 0.2rem;"></div>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary);">Source Verification:</span>
+                                <div id="result-source-verified" style="font-weight: 500; margin-top: 0.2rem;"></div>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary);">Keywords Verification:</span>
+                                <div id="result-keywords-verified" style="font-weight: 500; margin-top: 0.2rem;"></div>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary);">Teacher Approval Status:</span>
+                                <div id="result-approval-status" style="font-weight: 500; margin-top: 0.2rem;"></div>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary);">Answer ID:</span>
+                                <div id="result-answer-id" style="font-weight: 500; margin-top: 0.2rem;"></div>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary);">Format & Parameters:</span>
+                                <div id="result-parameters" style="font-weight: 500; margin-top: 0.2rem;"></div>
                             </div>
                         </div>
 
@@ -272,9 +312,95 @@
                             <button type="button" class="btn btn-secondary" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
                                 ↺ Modify Parameters
                             </button>
-                            <span style="font-size: 0.8125rem; color: var(--text-secondary);">
-                                Stage 1 Setup Complete • Waiting for Gemini & RAG Backend Integration
-                            </span>
+                            <span id="result-footer-note" style="font-size: 0.8125rem; color: var(--text-secondary);"></span>
+                        </div>
+
+                        <!-- Knowledge Check MCQ Trigger inside result container -->
+                        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h4 style="margin: 0 0 0.25rem 0;">Test Your Understanding</h4>
+                                <p class="text-secondary" style="margin: 0; font-size: 0.85rem;">Take a quick 3-question MCQ assessment grounded in this topic to evaluate mastery and identify gaps.</p>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btn-start-mcq-from-result" onclick="startMcqAssessment()">
+                                Start MCQ Assessment (3 Questions) 📝
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: MCQ Assessment & Gap Analysis Section -->
+                    <div class="setup-card" id="assessment-card" style="display: none; border-left: 4px solid #4f46e5;">
+                        <div class="setup-header">
+                            <div class="step-num" style="background-color: #4f46e5;">4</div>
+                            <div style="flex: 1;">
+                                <h3 class="step-title" id="assessment-card-title">MCQ Knowledge Assessment</h3>
+                                <p class="step-desc" id="assessment-card-desc">Evaluate your mastery and identify topics requiring revision.</p>
+                            </div>
+                            <span class="badge badge-primary" id="assessment-badge">3 Questions</span>
+                        </div>
+
+                        <!-- Assessment Loading State -->
+                        <div class="card loading-box" id="assessment-loading" style="display: none; margin-bottom: 1rem;">
+                            <div class="spinner"></div>
+                            <h4 style="margin-bottom: 0.25rem;">Generating Topic MCQs...</h4>
+                            <p class="text-secondary" style="font-size: 0.875rem;">
+                                Retrieving syllabus-grounded questions from backend...
+                            </p>
+                        </div>
+
+                        <!-- Assessment Error State -->
+                        <div class="card" id="assessment-error-box" style="display: none; border-left: 4px solid var(--danger-color); background-color: #fef2f2; margin-bottom: 1rem;">
+                            <div class="flex justify-between items-center mb-1">
+                                <h5 style="margin:0; color: var(--danger-color);">⚠️ Assessment Error</h5>
+                                <span class="badge badge-danger">Error</span>
+                            </div>
+                            <p id="assessment-error-message" style="color: var(--danger-color); font-size: 0.875rem; margin: 0;"></p>
+                        </div>
+
+                        <!-- Assessment Quiz Form -->
+                        <div id="assessment-quiz-container" style="display: none;">
+                            <div id="assessment-questions-list" style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1.5rem;">
+                                <!-- Dynamic questions rendered here -->
+                            </div>
+
+                            <!-- Unanswered Questions Alert -->
+                            <div id="assessment-unanswered-alert" style="display: none; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.875rem; color: #92400e;">
+                                ⚠️ Please select an answer for all questions before submitting.
+                            </div>
+
+                            <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 0.75rem;">
+                                <button type="button" class="btn btn-secondary" onclick="cancelAssessment()">
+                                    ✕ Close Assessment
+                                </button>
+                                <button type="button" class="btn btn-primary" id="btn-submit-mcq" onclick="submitAssessment()">
+                                    Submit Assessment 📤
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Assessment Results Section -->
+                        <div id="assessment-result-container" style="display: none;">
+                            <!-- Score Summary Card -->
+                            <div id="assessment-score-summary" style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+                                <!-- Score, percentage, weak topic alert, recommendation banner -->
+                            </div>
+
+                            <!-- Detailed Review -->
+                            <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.75rem;">
+                                Question-by-Question Review
+                            </div>
+                            <div id="assessment-review-list" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                                <!-- Detailed per-question results -->
+                            </div>
+
+                            <!-- Action buttons: Revise Topic or Retake Assessment -->
+                            <div class="flex justify-between items-center" style="flex-wrap: wrap; gap: 0.75rem;">
+                                <button type="button" class="btn btn-secondary" onclick="startMcqAssessment()">
+                                    ↺ Retake Assessment
+                                </button>
+                                <div id="revision-action-container">
+                                    <!-- Populated dynamically with Revise Topic button if weak -->
+                                </div>
+                            </div>
                         </div>
                     </div>
 

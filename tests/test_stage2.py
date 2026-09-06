@@ -106,10 +106,14 @@ class Stage2MaterialsAPITestCase(unittest.TestCase):
         self.assertEqual(proc_res.status_code, 200)
         proc_data = proc_res.get_json()
         self.assertEqual(proc_data["material_id"], material_id)
-        # Because Ankit's AI document_processor module is not yet present,
-        # status must not be fake-completed, but accurately reported as queued/pending without fabricating.
-        self.assertEqual(proc_data["processing_status"], "pending")
-        self.assertIn("not implemented yet", proc_data["message"])
+        # When AI document_processor is implemented, status is 'processed'; if absent, remains 'pending'
+        if "not implemented yet" in proc_data.get("message", ""):
+            self.assertEqual(proc_data["processing_status"], "pending")
+            self.assertIn("not implemented yet", proc_data["message"])
+        else:
+            self.assertEqual(proc_data["processing_status"], "processed")
+            self.assertIn("processed successfully", proc_data["message"])
+
 
         # Test non-existent material process
         proc_404 = self.client.post("/api/materials/9999/process")
